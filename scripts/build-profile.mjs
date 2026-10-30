@@ -8,15 +8,43 @@ const sharp = require(process.env.SHARP_MODULE || 'sharp');
 const root = fileURLToPath(new URL('../', import.meta.url));
 const points = JSON.parse(await fs.readFile(path.join(root, 'site/points.json'),'utf8'));
 const esc = s => String(s).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
+const stack = [
+  ['Cloud', ['AWS', 'EC2', 'EKS', 'ECS']],
+  ['Infrastructure as Code', ['Terraform', 'Reusable modules']],
+  ['Containers', ['Docker', 'Docker Compose', 'Kubernetes']],
+  ['CI/CD', ['Jenkins', 'GitHub Actions', 'GitLab CI', 'GitOps']],
+  ['Systems & Automation', ['Linux', 'Bash', 'Python']],
+  ['Observability', ['Prometheus', 'Grafana', 'CloudWatch']],
+  ['DevSecOps', ['SonarQube', 'Trivy', 'Checkov', 'TruffleHog', 'KubeLinter']],
+];
+const pillWidth = label => label.length * 8 + 20;
+let stackBottom = 246;
+const rows = stack.map(([label,items]) => {
+  const y = stackBottom;
+  let x = 728, baseline = y;
+  const badges = items.map(item => {
+    const width = pillWidth(item);
+    if (x + width > 1160) { x = 728; baseline += 32; }
+    const badge = {x, y:baseline, label:item};
+    x += width + 8;
+    return badge;
+  });
+  stackBottom = baseline + 34;
+  return {label,y,badges};
+});
+const buildsY = stackBottom + 18;
+const focusY = buildsY + 253;
+const footerY = focusY + 127;
+const cardHeight = footerY + 57;
 
 for (const theme of ['light', 'dark']) {
   const dark = theme === 'dark';
   const c = dark ? {bg:'#111a25', text:'#e5eef6', muted:'#9badbf', line:'#33475d', accent:'#68bdff', panel:'#1a293a'} : {bg:'#f8fbff',text:'#1d3042',muted:'#61778c',line:'#cbdbe9',accent:'#0879c4',panel:'#edf5fc'};
-  const parts = [`<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="860" viewBox="0 0 1200 860"><title>Godspower Ojeifo | Senior DevOps Engineer</title><rect width="1200" height="860" rx="18" fill="${c.bg}"/><style>text{font-family:Consolas,'DejaVu Sans Mono',monospace;fill:${c.text};font-size:18px}.muted{fill:${c.muted}}.accent{fill:${c.accent}}</style>`];
+  const parts = [`<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="${cardHeight}" viewBox="0 0 1200 ${cardHeight}"><title>Godspower Ojeifo | Senior DevOps Engineer</title><rect width="1200" height="${cardHeight}" rx="18" fill="${c.bg}"/><style>text{font-family:Consolas,'DejaVu Sans Mono',monospace;fill:${c.text};font-size:18px}.muted{fill:${c.muted}}.accent{fill:${c.accent}}</style>`];
   const text = (x,y,s,size=18,color=c.text,extra='') => parts.push(`<text x="${x}" y="${y}" font-size="${size}" style="font-size:${size}px;fill:${color}" ${extra}>${esc(s)}</text>`);
   const line = (x,y,x2) => parts.push(`<path d="M${x} ${y}H${x2}" stroke="${c.line}" stroke-dasharray="2 5"/>`);
   const section = (y,label) => { text(488,y,label,16,c.muted); line(488,y+13,1160); };
-  const pill = (x,y,label) => {const w=label.length*9+22;parts.push(`<rect x="${x}" y="${y-19}" width="${w}" height="28" rx="14" fill="${c.panel}" stroke="${c.line}"/>`);text(x+11,y,label,15);return w+8;};
+  const pill = (x,y,label) => {const w=pillWidth(label);parts.push(`<rect x="${x}" y="${y-19}" width="${w}" height="28" rx="14" fill="${c.panel}" stroke="${c.line}"/>`);text(x+10,y,label,13);};
   text(488,35,'heyohjayy@github:~',15,c.muted);
   text(1160,35,'DEV / OPS',12,c.muted,'text-anchor="end" letter-spacing="2"');
   parts.push(`<rect x="24" y="56" width="426" height="650" rx="3" fill="${c.bg}"/>`);
@@ -34,29 +62,28 @@ for (const theme of ['light', 'dark']) {
   text(488,146,'Cloud infrastructure · Reliability / Observability',15,c.muted);
   text(488,172,'CI/CD pipelines · Containerization',15,c.muted);
   section(207,'01 / STACK');
-  const stack = [ ['Cloud & IaC',['AWS','Terraform']], ['Containers',['Kubernetes','Docker','Helm']], ['Delivery',['Jenkins','GitHub Actions']], ['Automation',['Python','Bash']], ['Observability',['Prometheus','Grafana']] ];
-  stack.forEach(([label,items],i)=>{const y=246+i*34;text(488,y,label,16,c.accent);let x=670;for(const item of items)x+=pill(x,y,item);});
-  section(423,'02 / BUILDING');
-  text(488,462,'DriftCTL',20,c.accent,'font-weight="700"');
-  text(1160,462,'PUBLIC',11,c.muted,'text-anchor="end" letter-spacing="1.5"');
-  text(488,487,'Read-only Terraform / AWS drift detection.',16);
-  text(488,532,'Delyneo',20,c.accent,'font-weight="700"');
-  text(1160,532,'IN DEVELOPMENT',11,c.muted,'text-anchor="end" letter-spacing="1.5"');
-  text(488,557,'Terraform to source-aware cloud diagrams.',16);
-  text(488,602,'KubeMedic',20,c.accent,'font-weight="700"');
-  text(1160,602,'IN DEVELOPMENT',11,c.muted,'text-anchor="end" letter-spacing="1.5"');
-  text(488,627,'Kubernetes incident diagnosis & timelines.',16);
-  section(676,'03 / FOCUS');
-  text(488,714,'Helping engineering teams scale cloud infrastructure,',16);
-  text(488,742,'operate reliable production services, and automate',16);
-  text(488,770,'infrastructure and software delivery.',16);
-  line(32,803,1160);
-  text(32,833,'heyohjayy@github:~$',15,c.accent);
-  parts.push(`<rect x="217" y="820" width="9" height="16" fill="${c.accent}"/>`);
-  text(1160,833,'gojex.og@gmail.com',16,c.muted,'text-anchor="end"');
+  rows.forEach(({label,y,badges})=>{text(488,y,label,14,c.accent);badges.forEach(b=>pill(b.x,b.y,b.label));});
+  section(buildsY,'02 / BUILDING');
+  text(488,buildsY+39,'DriftCTL',20,c.accent,'font-weight="700"');
+  text(1160,buildsY+39,'PUBLIC',11,c.muted,'text-anchor="end" letter-spacing="1.5"');
+  text(488,buildsY+64,'Read-only Terraform / AWS drift detection.',16);
+  text(488,buildsY+109,'Delyneo',20,c.accent,'font-weight="700"');
+  text(1160,buildsY+109,'IN DEVELOPMENT',11,c.muted,'text-anchor="end" letter-spacing="1.5"');
+  text(488,buildsY+134,'Terraform to source-aware cloud diagrams.',16);
+  text(488,buildsY+179,'KubeMedic',20,c.accent,'font-weight="700"');
+  text(1160,buildsY+179,'IN DEVELOPMENT',11,c.muted,'text-anchor="end" letter-spacing="1.5"');
+  text(488,buildsY+204,'Kubernetes incident diagnosis & timelines.',16);
+  section(focusY,'03 / FOCUS');
+  text(488,focusY+38,'Helping engineering teams scale cloud infrastructure,',16);
+  text(488,focusY+66,'operate reliable production services, and automate',16);
+  text(488,focusY+94,'infrastructure and software delivery.',16);
+  line(32,footerY,1160);
+  text(32,footerY+30,'heyohjayy@github:~$',15,c.accent);
+  parts.push(`<rect x="217" y="${footerY+17}" width="9" height="16" fill="${c.accent}"/>`);
+  text(1160,footerY+30,'gojex.og@gmail.com',16,c.muted,'text-anchor="end"');
   parts.push('</svg>');
   const svg = parts.join('\n');
   await fs.writeFile(path.join(root,`assets/profile-${theme}.svg`),svg);
   await sharp(path.join(root,`assets/profile-${theme}.svg`),{density:144}).png().toFile(path.join(root,`assets/profile-${theme}.png`));
-  console.log(`Built ${theme} card (2400 x 1720)`);
+  console.log(`Built ${theme} card (2400 x ${cardHeight*2})`);
 }
