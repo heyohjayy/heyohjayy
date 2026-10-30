@@ -1,11 +1,11 @@
 <a href="https://heyohjayy.github.io/heyohjayy/">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/profile-dark.png">
-    <img src="assets/profile-light.png" width="1200" alt="Godspower Ojeifo (@heyohjayy), Senior DevOps Engineer. Cloud infrastructure, reliability and observability, CI/CD pipelines, containerization. Building DriftCTL, Delyneo and KubeMedic. Website coming soon.">
+    <img src="assets/profile-light.png" width="1200" alt="Godspower Ojeifo (@heyohjayy), Senior DevOps Engineer. Cloud infrastructure, reliability and observability, CI/CD pipelines, containerization. Building DriftCTL, Delyneo and KubeMedic.">
   </picture>
 </a>
 
-<p align="center"><a href="https://heyohjayy.github.io/heyohjayy/">Open the interactive profile ↗</a> · Website: coming soon</p>
+<p align="center"><a href="https://heyohjayy.github.io/heyohjayy/">Open the interactive profile ↗</a> · Websites</p>
 
 <a href="https://heyohjayy.github.io/heyohjayy/#activity-title">
   <picture>

@@ -50,8 +50,6 @@ for (const theme of ['light', 'dark']) {
   text(488,714,'Helping engineering teams scale cloud infrastructure,',16);
   text(488,742,'operate reliable production services, and automate',16);
   text(488,770,'infrastructure and software delivery.',16);
-  text(32,747,'WEBSITE',12,c.muted,'letter-spacing="1.5"');
-  text(32,781,'Coming soon',18,c.accent);
   line(32,803,1160);
   text(32,833,'heyohjayy@github:~$',15,c.accent);
   parts.push(`<rect x="217" y="820" width="9" height="16" fill="${c.accent}"/>`);
