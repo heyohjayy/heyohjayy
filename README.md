@@ -5,7 +5,7 @@
   </picture>
 </a>
 
-<p align="center"><a href="https://heyohjayy.github.io/heyohjayy/">Open the interactive profile ↗</a> · Websites</p>
+<p align="center"><a href="https://heyohjayy.github.io/heyohjayy/">Open the interactive profile ↗</a> · Website</p>
 
 <a href="https://heyohjayy.github.io/heyohjayy/#activity-title">
   <picture>
