@@ -1,7 +1,13 @@
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/profile-dark.png">
-  <img src="assets/profile-light.png" width="1200" alt="Godspower Ojeifo (@heyohjayy), Senior DevOps Engineer with 5+ years of experience. AWS, Terraform, Kubernetes, CI/CD, Python and Bash. Building DriftCTL for read-only AWS drift detection, Delyneo for Terraform architecture diagrams, and KubeMedic for Kubernetes incident diagnosis.">
-</picture>
+<a href="https://heyohjayy.github.io/heyohjayy/">
+  <picture>
+    <source media="(prefers-reduced-motion: reduce) and (prefers-color-scheme: dark)" srcset="assets/profile-dark.png">
+    <source media="(prefers-reduced-motion: reduce)" srcset="assets/profile-light.png">
+    <source media="(prefers-color-scheme: dark)" srcset="assets/profile-dark-animated.svg">
+    <img src="assets/profile-light-animated.svg" width="1200" alt="Godspower Ojeifo (@heyohjayy), Senior DevOps Engineer. AWS, Terraform, Kubernetes, CI/CD, Python and Bash. Building DriftCTL, Delyneo and KubeMedic. Open the interactive particle portrait.">
+  </picture>
+</a>
+
+<p align="center"><a href="https://heyohjayy.github.io/heyohjayy/">Explore the interactive portrait ↗</a> · Move your pointer to scatter the particles.</p>
 
 <a href="https://github.com/heyohjayy?tab=overview">
   <img src="assets/contributions.svg" width="1200" alt="GitHub contribution calendar for heyohjayy; refreshed daily by GitHub Actions after publication.">
