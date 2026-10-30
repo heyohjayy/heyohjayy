@@ -1,16 +1,17 @@
 <a href="https://heyohjayy.github.io/heyohjayy/">
   <picture>
-    <source media="(prefers-reduced-motion: reduce) and (prefers-color-scheme: dark)" srcset="assets/profile-dark.png">
-    <source media="(prefers-reduced-motion: reduce)" srcset="assets/profile-light.png">
-    <source media="(prefers-color-scheme: dark)" srcset="assets/profile-dark-animated.svg">
-    <img src="assets/profile-light-animated.svg" width="1200" alt="Godspower Ojeifo (@heyohjayy), Senior DevOps Engineer. AWS, Terraform, Kubernetes, CI/CD, Python and Bash. Building DriftCTL, Delyneo and KubeMedic. Open the interactive particle portrait.">
+    <source media="(prefers-color-scheme: dark)" srcset="assets/profile-dark.png">
+    <img src="assets/profile-light.png" width="1200" alt="Godspower Ojeifo (@heyohjayy), Senior DevOps Engineer. Cloud infrastructure, reliability and observability, CI/CD pipelines, containerization. Building DriftCTL, Delyneo and KubeMedic. Website coming soon.">
   </picture>
 </a>
 
-<p align="center"><a href="https://heyohjayy.github.io/heyohjayy/">Explore the interactive portrait ↗</a> · Move your pointer to scatter the particles.</p>
+<p align="center"><a href="https://heyohjayy.github.io/heyohjayy/">Open the interactive profile ↗</a> · Website: coming soon</p>
 
-<a href="https://github.com/heyohjayy?tab=overview">
-  <img src="assets/contributions.svg" width="1200" alt="GitHub contribution calendar for heyohjayy; refreshed daily by GitHub Actions after publication.">
+<a href="https://heyohjayy.github.io/heyohjayy/#activity-title">
+  <picture>
+    <source media="(prefers-reduced-motion: reduce)" srcset="assets/contributions-static.svg">
+    <img src="assets/contributions.svg" width="1200" alt="Real GitHub contribution calendar for heyohjayy with a blue snake and dithered cells. Open the interactive profile to play.">
+  </picture>
 </a>
 
 <p align="center">
@@ -24,7 +25,7 @@
 <details>
 <summary>About &amp; projects (text version)</summary>
 
-I'm Godspower Ojeifo, a Senior DevOps Engineer with 5+ years of experience building reliable AWS infrastructure and automating software delivery. My work spans Terraform, Kubernetes, CI/CD, observability, security and Bash/Python automation.
+I'm Godspower Ojeifo, a Senior DevOps Engineer helping engineering teams scale cloud infrastructure, operate reliable production services, and automate infrastructure and software delivery. My work spans Terraform, Kubernetes, CI/CD pipelines, containerization, reliability, observability, security and Bash/Python automation.
 
 - **[DriftCTL](https://github.com/heyohjayy/DriftCTL)** — read-only, policy-driven drift detection between Terraform state and live AWS resources, with risk classification and remediation planning.
 - **Delyneo** *(in development; private repository)* — turns Terraform projects, plans and architecture graphs into readable cloud diagrams with diagnostics and source traceability.
