@@ -3,6 +3,6 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "scripts": { "build": "node scripts/build-profile.mjs" },
+  "scripts": { "build": "node scripts/build-profile.mjs", "portrait": "node scripts/build-particles.mjs" },
   "devDependencies": { "sharp": "0.35.5" }
 }

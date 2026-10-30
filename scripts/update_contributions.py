@@ -23,9 +23,9 @@ QUERY = """query($login: String!) {
   }
 }"""
 COLORS = {
-    "NONE": "#e8e5dc", "FIRST_QUARTILE": "#f1d1bf",
-    "SECOND_QUARTILE": "#e5a684", "THIRD_QUARTILE": "#cc7450",
-    "FOURTH_QUARTILE": "#ac4425",
+    "NONE": "#e5eef6", "FIRST_QUARTILE": "#bfdef5",
+    "SECOND_QUARTILE": "#79bfee", "THIRD_QUARTILE": "#328fce",
+    "FOURTH_QUARTILE": "#086caf",
 }
 
 
@@ -36,8 +36,8 @@ def render(calendar):
     title = f'{calendar["totalContributions"]:,} contributions in the last year'
     parts = ['<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="234" viewBox="0 0 1200 234">',
              f'<title>{escape(LOGIN)}: {escape(title)}</title>',
-             '<rect width="1200" height="234" rx="16" fill="#fbfaf7"/>',
-             '<g font-family="Consolas,monospace" fill="#777970" font-size="12">',
+             '<rect width="1200" height="234" rx="16" fill="#f8fbff"/>',
+             '<g font-family="Consolas,monospace" fill="#61778c" font-size="12">',
              '<text x="28" y="28" letter-spacing="2">CONTRIBUTION.MAP</text>',
              f'<text x="1172" y="28" text-anchor="end">{escape(title)}</text>']
     last_month = None

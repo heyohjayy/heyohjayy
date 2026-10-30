@@ -6,12 +6,12 @@ import path from 'node:path';
 const require = createRequire(import.meta.url);
 const sharp = require(process.env.SHARP_MODULE || 'sharp');
 const root = fileURLToPath(new URL('../', import.meta.url));
-const portrait = (await fs.readFile(path.join(root, 'assets/portrait.png'))).toString('base64');
+const points = JSON.parse(await fs.readFile(path.join(root, 'site/points.json'),'utf8'));
 const esc = s => String(s).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
 
 for (const theme of ['light', 'dark']) {
   const dark = theme === 'dark';
-  const c = dark ? {bg:'#11161d', text:'#e8e5de', muted:'#9ba5af', line:'#38414b', accent:'#ef936e', panel:'#1b232d'} : {bg:'#fbfaf7',text:'#242724',muted:'#777970',line:'#d9d7cf',accent:'#b64a29',panel:'#f0eee7'};
+  const c = dark ? {bg:'#111a25', text:'#e5eef6', muted:'#9badbf', line:'#33475d', accent:'#68bdff', panel:'#1a293a'} : {bg:'#f8fbff',text:'#1d3042',muted:'#61778c',line:'#cbdbe9',accent:'#0879c4',panel:'#edf5fc'};
   const parts = [`<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="860" viewBox="0 0 1200 860"><title>Godspower Ojeifo | Senior DevOps Engineer</title><rect width="1200" height="860" rx="18" fill="${c.bg}"/><style>text{font-family:Consolas,'DejaVu Sans Mono',monospace;fill:${c.text};font-size:18px}.muted{fill:${c.muted}}.accent{fill:${c.accent}}</style>`];
   const text = (x,y,s,size=18,color=c.text,extra='') => parts.push(`<text x="${x}" y="${y}" font-size="${size}" style="font-size:${size}px;fill:${color}" ${extra}>${esc(s)}</text>`);
   const line = (x,y,x2) => parts.push(`<path d="M${x} ${y}H${x2}" stroke="${c.line}" stroke-dasharray="2 5"/>`);
@@ -20,10 +20,21 @@ for (const theme of ['light', 'dark']) {
   text(32,35,'VISUAL.MAP / 01',12,c.muted,'letter-spacing="2"');
   text(488,35,'heyohjayy@github:~',15,c.muted);
   text(1160,35,'DEV / OPS',12,c.muted,'text-anchor="end" letter-spacing="2"');
-  parts.push('<rect x="24" y="56" width="426" height="650" rx="3" fill="#f6f3ed"/>');
-  parts.push(`<image href="data:image/png;base64,${portrait}" x="28" y="100" width="418" height="570" preserveAspectRatio="xMidYMid meet"/>`);
+  parts.push(`<rect x="24" y="56" width="426" height="650" rx="3" fill="${c.bg}"/>`);
+  const inks=dark?['#d9eafa','#9ab7cc','#68849e','#68bdff']:['#213c52','#718b9e','#b2c8d9','#168bda'];
+  const still=[], animated=[];
+  points.forEach(([x,y,r,tone],i)=>{
+    const cx=+(38+x*.95).toFixed(2),cy=+(162+y*1.08).toFixed(2);
+    const circle=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="${inks[tone]}"`;
+    still.push(`${circle}/>`);
+    const dx=cx-245,dy=cy-355,d=Math.hypot(dx,dy),push=Math.max(0,1-d/90)*70;
+    const sx=+(dx/Math.max(d,1)*push).toFixed(2),sy=+(dy/Math.max(d,1)*push).toFixed(2);
+    animated.push(`${circle}><animateTransform attributeName="transform" type="translate" dur="8s" repeatCount="indefinite" keyTimes="0;.18;.35;.52;.75;1" values="0 0;0 -1;${sx} ${sy-1};${sx*.35} ${sy*.35};0 1;0 0"/></circle>`);
+  });
+  parts.push('<!-- PARTICLES -->'+still.join('')+'<!-- /PARTICLES -->');
   parts.push(`<path d="M24 78V56H46 M428 56H450V78 M24 684V706H46 M428 706H450V684" fill="none" stroke="${c.accent}" stroke-width="2"/>`);
-  text(40,85,'PORTRAIT / GODSPOWER',11,'#817e76','letter-spacing="2"');
+  text(40,85,'PARTICLE.MAP / GODSPOWER',11,c.muted,'letter-spacing="2"');
+  text(237,672,'EXPLORE THE INTERACTIVE PORTRAIT',11,c.accent,'text-anchor="middle" letter-spacing="1"');
   text(488,80,'Godspower Ojeifo',31,c.text,'font-weight="700"');
   text(488,113,'Senior DevOps Engineer',21,c.accent);
   text(488,146,'5+ years · AWS platforms · reliability',17,c.muted);
@@ -53,5 +64,6 @@ for (const theme of ['light', 'dark']) {
   const svg = parts.join('\n');
   await fs.writeFile(path.join(root,`assets/profile-${theme}.svg`),svg);
   await sharp(path.join(root,`assets/profile-${theme}.svg`),{density:144}).png().toFile(path.join(root,`assets/profile-${theme}.png`));
+  await fs.writeFile(path.join(root,`assets/profile-${theme}-animated.svg`),svg.replace('<!-- PARTICLES -->'+still.join('')+'<!-- /PARTICLES -->',animated.join('')));
   console.log(`Built ${theme} card (2400 x 1720)`);
 }
