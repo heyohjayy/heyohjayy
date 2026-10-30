@@ -1,0 +1,8 @@
+{
+  "name": "heyohjayy-profile",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": { "build": "node scripts/build-profile.mjs" },
+  "devDependencies": { "sharp": "0.35.5" }
+}

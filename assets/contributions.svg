@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="130" viewBox="0 0 1200 130">
+  <title>Contribution map pending its first GitHub Actions refresh</title>
+  <rect width="1200" height="130" rx="16" fill="#fbfaf7"/>
+  <g font-family="Consolas,monospace">
+    <text x="30" y="30" font-size="12" letter-spacing="2" fill="#777970">CONTRIBUTION.MAP</text>
+    <text x="30" y="70" font-size="18" fill="#242724">Live GitHub activity will appear after the first workflow run.</text>
+    <text x="30" y="101" font-size="14" fill="#b64a29">@heyohjayy / refreshed daily after publication</text>
+  </g>
+</svg>

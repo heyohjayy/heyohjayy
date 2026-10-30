@@ -1,0 +1,57 @@
+// Build the GitHub-safe PNG cards from an editable SVG layout.
+import fs from 'node:fs/promises';
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
+import path from 'node:path';
+const require = createRequire(import.meta.url);
+const sharp = require(process.env.SHARP_MODULE || 'sharp');
+const root = fileURLToPath(new URL('../', import.meta.url));
+const portrait = (await fs.readFile(path.join(root, 'assets/portrait.png'))).toString('base64');
+const esc = s => String(s).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
+
+for (const theme of ['light', 'dark']) {
+  const dark = theme === 'dark';
+  const c = dark ? {bg:'#11161d', text:'#e8e5de', muted:'#9ba5af', line:'#38414b', accent:'#ef936e', panel:'#1b232d'} : {bg:'#fbfaf7',text:'#242724',muted:'#777970',line:'#d9d7cf',accent:'#b64a29',panel:'#f0eee7'};
+  const parts = [`<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="860" viewBox="0 0 1200 860"><title>Godspower Ojeifo | Senior DevOps Engineer</title><rect width="1200" height="860" rx="18" fill="${c.bg}"/><style>text{font-family:Consolas,'DejaVu Sans Mono',monospace;fill:${c.text};font-size:18px}.muted{fill:${c.muted}}.accent{fill:${c.accent}}</style>`];
+  const text = (x,y,s,size=18,color=c.text,extra='') => parts.push(`<text x="${x}" y="${y}" font-size="${size}" style="font-size:${size}px;fill:${color}" ${extra}>${esc(s)}</text>`);
+  const line = (x,y,x2) => parts.push(`<path d="M${x} ${y}H${x2}" stroke="${c.line}" stroke-dasharray="2 5"/>`);
+  const section = (y,label) => { text(488,y,label,16,c.muted); line(488,y+13,1160); };
+  const pill = (x,y,label) => {const w=label.length*9+22;parts.push(`<rect x="${x}" y="${y-19}" width="${w}" height="28" rx="14" fill="${c.panel}" stroke="${c.line}"/>`);text(x+11,y,label,15);return w+8;};
+  text(32,35,'VISUAL.MAP / 01',12,c.muted,'letter-spacing="2"');
+  text(488,35,'heyohjayy@github:~',15,c.muted);
+  text(1160,35,'DEV / OPS',12,c.muted,'text-anchor="end" letter-spacing="2"');
+  parts.push('<rect x="24" y="56" width="426" height="650" rx="3" fill="#f6f3ed"/>');
+  parts.push(`<image href="data:image/png;base64,${portrait}" x="28" y="100" width="418" height="570" preserveAspectRatio="xMidYMid meet"/>`);
+  parts.push(`<path d="M24 78V56H46 M428 56H450V78 M24 684V706H46 M428 706H450V684" fill="none" stroke="${c.accent}" stroke-width="2"/>`);
+  text(40,85,'PORTRAIT / GODSPOWER',11,'#817e76','letter-spacing="2"');
+  text(488,80,'Godspower Ojeifo',31,c.text,'font-weight="700"');
+  text(488,113,'Senior DevOps Engineer',21,c.accent);
+  text(488,146,'5+ years · AWS platforms · reliability',17,c.muted);
+  section(191,'01 / STACK');
+  const stack = [ ['Cloud & IaC',['AWS','Terraform']], ['Containers',['Kubernetes','Docker','Helm']], ['Delivery',['Jenkins','GitHub Actions']], ['Automation',['Python','Bash']], ['Observability',['Prometheus','Grafana']] ];
+  stack.forEach(([label,items],i)=>{const y=230+i*34;text(488,y,label,16,c.accent);let x=670;for(const item of items)x+=pill(x,y,item);});
+  section(423,'02 / BUILDING');
+  text(488,462,'DriftCTL',20,c.accent,'font-weight="700"');
+  text(1160,462,'PUBLIC',11,c.muted,'text-anchor="end" letter-spacing="1.5"');
+  text(488,487,'Read-only Terraform / AWS drift detection.',16);
+  text(488,532,'Delyneo',20,c.accent,'font-weight="700"');
+  text(1160,532,'IN DEVELOPMENT',11,c.muted,'text-anchor="end" letter-spacing="1.5"');
+  text(488,557,'Terraform to source-aware cloud diagrams.',16);
+  text(488,602,'KubeMedic',20,c.accent,'font-weight="700"');
+  text(1160,602,'IN DEVELOPMENT',11,c.muted,'text-anchor="end" letter-spacing="1.5"');
+  text(488,627,'Kubernetes incident diagnosis & timelines.',16);
+  section(676,'03 / FOCUS');
+  text(488,714,'Automate delivery. Understand infrastructure.',16);
+  text(488,741,'Keep production reliable.',16);
+  text(32,747,'BUILDING FOR PRODUCTION',12,c.muted,'letter-spacing="1.5"');
+  text(32,781,'Infrastructure. Clarity. Reliability.',16);
+  line(32,803,1160);
+  text(32,833,'heyohjayy@github:~$',15,c.accent);
+  parts.push(`<rect x="217" y="820" width="9" height="16" fill="${c.accent}"/>`);
+  text(1160,833,'gojex.og@gmail.com',16,c.muted,'text-anchor="end"');
+  parts.push('</svg>');
+  const svg = parts.join('\n');
+  await fs.writeFile(path.join(root,`assets/profile-${theme}.svg`),svg);
+  await sharp(path.join(root,`assets/profile-${theme}.svg`),{density:144}).png().toFile(path.join(root,`assets/profile-${theme}.png`));
+  console.log(`Built ${theme} card (2400 x 1720)`);
+}
