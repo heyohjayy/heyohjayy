@@ -114,6 +114,10 @@ precision highp float;
 
 uniform vec2 u_resolution;
 uniform float u_time;
+uniform float u_sceneTime;
+uniform float u_scenePeriod;
+uniform float u_night;
+uniform float u_scenery;
 uniform float u_speed;
 uniform float u_coverage;
 uniform float u_intensity;
@@ -145,6 +149,38 @@ float hash(vec2 p) {
   vec3 p3 = fract(vec3(p.xyx) * 0.1031);
   p3 += dot(p3, p3.yzx + 33.33);
   return fract((p3.x + p3.y) * p3.z);
+}
+
+// Original site additions: five small daytime birds and a sparse night sky.
+float starField(vec2 uv, float aspect) {
+  vec2 grid = uv * vec2(36.0 * aspect, 24.0);
+  vec2 cell = floor(grid);
+  float seed = hash(cell + 17.7);
+  vec2 point = vec2(hash(cell + 3.1), hash(cell + 9.8)) * 0.6 + 0.2;
+  float distanceToStar = length(fract(grid) - point);
+  float glow = exp(-distanceToStar * distanceToStar * 48.0) * 0.17;
+  float core = exp(-distanceToStar * distanceToStar * 560.0);
+  float twinkle = 0.65 + 0.35 * sin(6.2831853 * u_sceneTime / u_scenePeriod * (1.0 + floor(seed * 3.0)) + seed * 80.0);
+  return step(0.93, seed) * (core + glow) * twinkle;
+}
+
+float birdField(vec2 uv, float aspect) {
+  float ink = 0.0;
+  for (int i = 0; i < 5; i++) {
+    float n = float(i);
+    float seed = hash(vec2(n, 23.0));
+    float x = mod(n * 0.245 + u_sceneTime / u_scenePeriod * 1.25, 1.25) - 0.125;
+    float y = 0.95 + seed * 0.03 + sin(6.2831853 * u_sceneTime / u_scenePeriod + n) * 0.007;
+    vec2 p = (uv - vec2(x, y)) * vec2(aspect, 1.0);
+    float size = 0.009 + seed * 0.004;
+    float beats = max(1.0, floor(u_scenePeriod * 0.8));
+    float flap = sin(6.2831853 * u_sceneTime / u_scenePeriod * beats + n * 1.7);
+    float wingY = flap * 0.65 * abs(p.x) + 0.20 * p.x * p.x / size;
+    float wing = (1.0 - smoothstep(0.00075, 0.0018, abs(p.y - wingY))) * (1.0 - smoothstep(size * 0.8, size, abs(p.x)));
+    vec2 body = p / vec2(0.0012, 0.002);
+    ink = max(ink, max(wing, exp(-dot(body, body) * 1.3)));
+  }
+  return ink;
 }
 
 // Value noise from a 256² random texture: one lookup per sample.
@@ -287,6 +323,13 @@ void main() {
   }
 
   vec3 col = sky * T + L;
+  if (u_scenery > 0.5) {
+    if (u_night > 0.5) {
+      col += vec3(0.80, 0.90, 1.0) * starField(uv, aspect) * (0.18 + 0.82 * T);
+    } else {
+      col = mix(col, vec3(0.055, 0.16, 0.24), birdField(uv, aspect) * 0.88);
+    }
+  }
 
   // Lightning, lit from inside the clouds it hits.
   if (u_flash > 0.0) {
@@ -462,6 +505,10 @@ export function createShaderSky(
   let noiseTex                      = null
   let uResolution                              = null
   let uTime                              = null
+  let uSceneTime                              = null
+  let uScenePeriod                              = null
+  let uNight                              = null
+  let uScenery                              = null
   let uSpeed                              = null
   let uCoverage                              = null
   let uIntensity                              = null
@@ -545,6 +592,10 @@ export function createShaderSky(
 
     uResolution = gl.getUniformLocation(program, "u_resolution")
     uTime = gl.getUniformLocation(program, "u_time")
+    uSceneTime = gl.getUniformLocation(program, "u_sceneTime")
+    uScenePeriod = gl.getUniformLocation(program, "u_scenePeriod")
+    uNight = gl.getUniformLocation(program, "u_night")
+    uScenery = gl.getUniformLocation(program, "u_scenery")
     uSpeed = gl.getUniformLocation(program, "u_speed")
     uCoverage = gl.getUniformLocation(program, "u_coverage")
     uIntensity = gl.getUniformLocation(program, "u_intensity")
@@ -689,6 +740,10 @@ export function createShaderSky(
 
     gl.uniform2f(uResolution, canvas.width, canvas.height)
     gl.uniform1f(uTime, time)
+    gl.uniform1f(uSceneTime, time)
+    gl.uniform1f(uScenePeriod, 20.0)
+    gl.uniform1f(uNight, dark ? 1 : 0)
+    gl.uniform1f(uScenery, 1)
     gl.uniform1f(uSpeed, reduce ? 0 : (options.speed ?? 0.1))
     gl.uniform1f(uCoverage, Math.min(1, Math.max(0, options.coverage ?? 0.5)))
     gl.uniform1f(uIntensity, Math.min(1, Math.max(0, options.intensity ?? 0.9)))

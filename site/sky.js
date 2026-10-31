@@ -15,7 +15,7 @@ function sync(){
  document.documentElement.dataset.skyTheme=dark?'dark':'light';
  Object.assign(background.style,skyFallback(palettes[dark?'dark':'light'],dark));
  background.hidden=!enabled;
- engine?.setOptions({theme:dark?'dark':'light',colors:palettes[dark?'dark':'light'],paused:paused||!enabled});
+ engine?.setOptions({theme:dark?'dark':'light',colors:palettes[dark?'dark':'light'],coverage:dark?.3:.4,paused:paused||!enabled});
  themeButton.textContent=`Theme: ${choice[0].toUpperCase()+choice.slice(1)}`;
  toggleButton.textContent=enabled?'Sky: On':'Sky: Off';toggleButton.setAttribute('aria-pressed',String(enabled));
  pauseButton.textContent=reduce.matches?'Reduced motion':paused?'Resume sky':'Pause sky';
@@ -25,7 +25,7 @@ function sync(){
 }
 sync();
 try{
- engine=createShaderSky(canvas,{speed:.035,coverage:.4,intensity:.58,amount:.35,scale:.4,variation:.65,interactive:false,lightning:false,glass:false,theme:isDark()?'dark':'light',colors:palettes[isDark()?'dark':'light']});
+ engine=createShaderSky(canvas,{speed:.16,coverage:isDark()?.3:.4,intensity:.58,amount:.35,scale:.4,variation:.65,interactive:false,lightning:false,glass:false,theme:isDark()?'dark':'light',colors:palettes[isDark()?'dark':'light']});
  document.documentElement.dataset.skyState=engine?'webgl':'fallback';
 }catch(error){document.documentElement.dataset.skyState='fallback';console.warn('Sky preview is using its static background.',error);}
 sync();
