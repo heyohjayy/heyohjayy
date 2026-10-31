@@ -23,26 +23,3 @@
   <a href="https://github.com/heyohjayy/server-operations-toolkit">Server Operations Toolkit</a> ·
   <a href="https://github.com/heyohjayy?tab=repositories">More work</a>
 </p>
-
-<details>
-<summary>About &amp; projects (text version)</summary>
-
-I'm Godspower Ojeifo, a Senior DevOps Engineer helping engineering teams scale cloud infrastructure, operate reliable production services, and automate infrastructure and software delivery. My work spans Terraform, Kubernetes, CI/CD pipelines, containerization, reliability, observability, security and Bash/Python automation.
-
-| Area | Stack |
-| --- | --- |
-| Cloud | AWS · EC2 · EKS · ECS |
-| Infrastructure as Code | Terraform · Reusable modules |
-| Containers | Docker · Docker Compose · Kubernetes |
-| CI/CD | Jenkins · GitHub Actions · GitLab CI · GitOps |
-| Systems & Automation | Linux · Bash · Python |
-| Observability | Prometheus · Grafana · CloudWatch |
-| DevSecOps | SonarQube · Trivy · Checkov · TruffleHog · KubeLinter |
-
-- **[DriftCTL](https://github.com/heyohjayy/DriftCTL)** — read-only, policy-driven drift detection between Terraform state and live AWS resources, with risk classification and remediation planning.
-- **Delyneo** *(in development; private repository)* — turns Terraform projects, plans and architecture graphs into readable cloud diagrams with diagnostics and source traceability.
-- **KubeMedic** *(in development; private repository)* — Kubernetes incident diagnosis, evidence collection and timeline analysis.
-- **[Server Operations Toolkit](https://github.com/heyohjayy/server-operations-toolkit)** — Bash utilities for Linux health checks, networking, services and storage operations.
-- **[Voting App Deployment](https://github.com/heyohjayy/voting-app-deployment)** — microservices deployment and DevSecOps pipeline automation.
-
-</details>
