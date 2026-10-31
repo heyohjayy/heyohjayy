@@ -1,9 +1,9 @@
 <a href="https://heyohjayy.github.io/heyohjayy/">
   <picture>
-    <source media="(prefers-reduced-motion: reduce) and (prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/heyohjayy/heyohjayy/00ffca1d17ec494514d779937ed79adf367355e0/assets/profile-sky-night-static.png">
-    <source media="(prefers-reduced-motion: reduce)" srcset="https://raw.githubusercontent.com/heyohjayy/heyohjayy/00ffca1d17ec494514d779937ed79adf367355e0/assets/profile-sky-static.png">
-    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/heyohjayy/heyohjayy/00ffca1d17ec494514d779937ed79adf367355e0/assets/profile-sky-night.gif">
-    <img src="https://raw.githubusercontent.com/heyohjayy/heyohjayy/00ffca1d17ec494514d779937ed79adf367355e0/assets/profile-sky.gif" width="1200" alt="Godspower Ojeifo (@heyohjayy), Senior DevOps Engineer. Moving clouds, daytime birds or nighttime stars surround a still portrait and text panel. Cloud infrastructure, reliability and observability, CI/CD pipelines, containerization. Building DriftCTL, Delyneo and KubeMedic.">
+    <source media="(prefers-reduced-motion: reduce) and (prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/heyohjayy/heyohjayy/19c0c1ca3f3d4285750a06027440fafd15056452/assets/profile-sky-night-static.png">
+    <source media="(prefers-reduced-motion: reduce)" srcset="https://raw.githubusercontent.com/heyohjayy/heyohjayy/19c0c1ca3f3d4285750a06027440fafd15056452/assets/profile-sky-static.png">
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/heyohjayy/heyohjayy/19c0c1ca3f3d4285750a06027440fafd15056452/assets/profile-sky-night.gif">
+    <img src="https://raw.githubusercontent.com/heyohjayy/heyohjayy/19c0c1ca3f3d4285750a06027440fafd15056452/assets/profile-sky.gif" width="1200" alt="Godspower Ojeifo (@heyohjayy), Senior DevOps Engineer. Moving clouds, daytime birds or nighttime stars surround a still portrait and text panel. Cloud infrastructure, reliability and observability, CI/CD pipelines, containerization. Building DriftCTL, Delyneo and KubeMedic.">
   </picture>
 </a>
 
