@@ -4,3 +4,8 @@ site/readme-preview.html
 __pycache__/
 .env
 .env.*
+
+# Local working instructions and setup notes
+/AGENTS.md
+/SETUP.md
+/INTERACTIVE.md
