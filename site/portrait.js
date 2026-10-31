@@ -9,7 +9,7 @@ const motion=matchMedia('(prefers-reduced-motion: reduce)');
 const dark=matchMedia('(prefers-color-scheme: dark)');
 let paused=motion.matches,visible=true,raf=0,last=0,particles=[],inks=[];
 const pointer={x:-1000,y:-1000,active:false};
-function palette(){inks=dark.matches?['#d9eafa','#9ab7cc','#68849e','#68bdff']:['#213c52','#718b9e','#b2c8d9','#168bda'];}
+function palette(){const theme=document.documentElement.dataset.theme;const isDark=theme?theme==='dark':dark.matches;inks=isDark?['#d9eafa','#9ab7cc','#68849e','#68bdff']:['#213c52','#718b9e','#b2c8d9','#168bda'];}
 function resize(){const box=stage.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,2);canvas.width=Math.round(box.width*dpr);canvas.height=Math.round(box.height*dpr);draw();}
 function draw(){
   if(!particles.length)return;
@@ -49,6 +49,7 @@ canvas.addEventListener('blur',()=>{pointer.active=false;});
 pauseButton.addEventListener('click',()=>{paused=!paused;pointer.active=false;updateButton();if(paused)stop();else start();});
 motion.addEventListener('change',()=>{paused=motion.matches;pointer.active=false;updateButton();if(paused){stop();for(const p of particles){p.x=p.ox;p.y=p.oy;p.vx=p.vy=0;}draw();}else start();});
 dark.addEventListener('change',()=>{palette();draw();});
+window.addEventListener('profile-theme-change',()=>{palette();draw();});
 document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();else start();});
 new IntersectionObserver(([entry])=>{visible=entry.isIntersecting;if(visible)start();else stop();},{threshold:.05}).observe(stage);
 new ResizeObserver(resize).observe(stage);

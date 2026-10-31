@@ -16,12 +16,13 @@ const bayer=[0,8,2,10,12,4,14,6,3,11,1,9,15,7,13,5];
 let cells=[],labels=[],body=[],embers=[],manual=false,paused=reduced.matches,visible=true,raf=0,lastTick=0;
 let heading=[1,0],nextHeading=[1,0],index=10,length=12,palette=[],touchStart=null;
 const key=([x,y])=>x+','+y;
-function colors(){palette=dark.matches?['#1c3043','#375e7c','#4c8ab6','#6ab5ea','#9cd8ff']:['#e5eef6','#bfdef5','#79bfee','#328fce','#086caf'];}
+function isDark(){const theme=document.documentElement.dataset.theme;return theme?theme==='dark':dark.matches;}
+function colors(){palette=isDark()?['#1c3043','#375e7c','#4c8ab6','#6ab5ea','#9cd8ff']:['#e5eef6','#bfdef5','#79bfee','#328fce','#086caf'];}
 function reset(){index=10;length=12;body=Array.from({length},(_,i)=>cycle[(index-i+cycle.length)%cycle.length]);heading=nextHeading=[1,0];}
 function resize(){const r=canvas.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2);canvas.width=Math.round(r.width*d);canvas.height=Math.round(r.height*d);draw(performance.now());}
 function draw(now){
  ctx.setTransform(canvas.width/1200,0,0,canvas.height/226,0,0);ctx.clearRect(0,0,1200,226);
- const ink=dark.matches?'#9badbf':'#61778c';ctx.font='11px Consolas,monospace';ctx.fillStyle=ink;
+ const ink=isDark()?'#9badbf':'#61778c';ctx.font='11px Consolas,monospace';ctx.fillStyle=ink;
  for(const label of labels)ctx.fillText(label.text,30+label.column*21,32);
  for(const c of cells){
    const x=30+c.column*21,y=50+c.row*20;
@@ -33,7 +34,7 @@ function draw(now){
  }
  ctx.globalAlpha=1;
  for(let i=body.length-1;i>=0;i--){const [x,y]=body[i];ctx.fillStyle=i===0?palette[4]:palette[3];ctx.beginPath();ctx.arc(38.5+x*21,58.5+y*20,i===0?6:Math.max(3,5-i*.09),0,Math.PI*2);ctx.fill();}
- if(body.length){const [x,y]=body[0];ctx.fillStyle=dark.matches?'#111a25':'white';for(const off of [-2,2])ctx.fillRect(40+x*21,57+y*20+off,1.5,1.5);}
+ if(body.length){const [x,y]=body[0];ctx.fillStyle=isDark()?'#111a25':'white';for(const off of [-2,2])ctx.fillRect(40+x*21,57+y*20+off,1.5,1.5);}
  embers=embers.filter(e=>now-e.at<850);
  for(const e of embers){const t=(now-e.at)/850;ctx.globalAlpha=1-t;ctx.fillStyle=palette[3];ctx.fillRect(e.x+e.vx*t*24,e.y-22*t+e.vy*t*12,1.6,1.6);}
  ctx.globalAlpha=1;ctx.fillStyle=ink;ctx.fillText('Less',1015,216);
@@ -64,6 +65,7 @@ canvas.addEventListener('pointermove',e=>{if(paused||e.pointerType==='touch')ret
 canvas.addEventListener('touchstart',e=>{const t=e.touches[0];touchStart=[t.clientX,t.clientY];},{passive:true});
 canvas.addEventListener('touchend',e=>{if(!touchStart)return;const t=e.changedTouches[0],dx=t.clientX-touchStart[0],dy=t.clientY-touchStart[1];touchStart=null;if(Math.hypot(dx,dy)<20)return;if(!manual)playGame();const dir=Math.abs(dx)>Math.abs(dy)?[Math.sign(dx),0]:[0,Math.sign(dy)];if(dir[0]!==-heading[0]||dir[1]!==-heading[1])nextHeading=dir;},{passive:true});
 dark.addEventListener('change',()=>{colors();draw(performance.now());});
+window.addEventListener('profile-theme-change',()=>{colors();draw(performance.now());});
 reduced.addEventListener('change',()=>{paused=reduced.matches;buttons();if(paused){stop();for(const c of cells)c.eaten=-Infinity;embers=[];draw(performance.now());}else start();});
 document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();else start();});
 new ResizeObserver(resize).observe(canvas);

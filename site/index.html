@@ -9,8 +9,14 @@
   <link rel="stylesheet" href="style.css">
   <script src="portrait.js" type="module"></script>
   <script src="contributions.js" type="module"></script>
+  <script src="sky.js" type="module"></script>
 </head>
 <body>
+  <div class="sky-background" id="sky-background" aria-hidden="true"><canvas id="sky" tabindex="-1"></canvas></div>
+  <aside class="preview-toolbar" aria-label="Display settings">
+    <span>DISPLAY SETTINGS</span>
+    <div><button id="preview-theme" type="button">Theme: Auto</button><button id="preview-sky" type="button" aria-pressed="true">Sky: On</button><button id="preview-pause" type="button" aria-pressed="false">Pause sky</button></div>
+  </aside>
   <main class="card">
     <header><a href="https://github.com/heyohjayy">heyohjayy@github:~</a><span>DEV / OPS</span></header>
     <div class="layout">
