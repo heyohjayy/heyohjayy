@@ -12,7 +12,7 @@
 <a href="https://heyohjayy.github.io/heyohjayy/#activity-title">
   <picture>
     <source media="(prefers-reduced-motion: reduce)" srcset="assets/contributions-static.svg">
-    <img src="assets/contributions.svg" width="1200" alt="Real GitHub contribution calendar for heyohjayy. A brief hello introduces a snake that takes the colour of each sparkling target it catches, with expanding particle bursts. Open the interactive profile to play.">
+    <img src="assets/contributions.svg" width="1200" alt="January–December GitHub contribution calendar for heyohjayy, with visible activity levels at their actual dates. A brick greeting introduces a snake that takes the colour of each sparkling target it catches. Open the interactive profile to play.">
   </picture>
 </a>
 

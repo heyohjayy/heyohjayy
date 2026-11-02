@@ -27,18 +27,19 @@ function greeting(now){
 }
 const key=([x,y])=>x+','+y;
 function isDark(){const theme=document.documentElement.dataset.theme;return theme?theme==='dark':dark.matches;}
-function colors(){palette=isDark()?['#1c3043','#375e7c','#4c8ab6','#6ab5ea','#9cd8ff']:['#e5eef6','#bfdef5','#79bfee','#328fce','#086caf'];}
+function colors(){palette=isDark()?['#1c3043','#375e7c','#4c8ab6','#6ab5ea','#9cd8ff']:['#e5eef6','#8fc7ed','#4ba8e1','#167fbe','#086caf'];}
 function reset(){body=startingBody(cells);length=body.length;heading=nextHeading=[1,0];target=chooseTarget(body,cells,clock,previousTarget,selection);caughtAt=-Infinity;}
 function resize(){const r=canvas.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2);canvas.width=Math.round(r.width*d);canvas.height=Math.round(r.height*d);draw(clock);}
 function draw(now){
  ctx.setTransform(canvas.width/1200,0,0,canvas.height/226,0,0);ctx.clearRect(0,0,1200,226);
  const ink=isDark()?'#9badbf':'#61778c';ctx.font='11px Consolas,monospace';ctx.fillStyle=ink;
  for(const label of labels)ctx.fillText(label.text,30+label.column*21,32);
+ for(const [row,label] of [[1,'M'],[3,'W'],[5,'F']])ctx.fillText(label,11,62+row*20);
  for(const c of cells){
    const x=30+c.column*21,y=50+c.row*20;
-   ctx.globalAlpha=1;ctx.fillStyle=palette[0];ctx.fillRect(x,y,17,17);
+   ctx.globalAlpha=1;ctx.fillStyle=c.future?(isDark()?'#142333':'#f1f5f9'):palette[0];ctx.fillRect(x,y,17,17);
    const elapsed=now-c.eaten,opacity=Math.min(1,Math.max(0,(elapsed-1200)/1400));
-   if(c.level){ctx.fillStyle=palette[c.level];ctx.globalAlpha=opacity;
+   if(c.level){ctx.fillStyle=palette[c.level];ctx.fillRect(x,y,17,17);ctx.fillStyle=isDark()?'#ffffff':'#0b4268';ctx.globalAlpha=opacity*.15;
      for(let py=0;py<8;py++)for(let px=0;px<8;px++)if(bayer[(py%4)*4+px%4]<[0,4,8,12,16][c.level])ctx.fillRect(x+px*2,y+py*2,1.3,1.3);
    }
  }
@@ -101,7 +102,8 @@ pause.addEventListener('click',()=>{paused=!paused;buttons();if(paused)stop();el
 canvas.addEventListener('click',()=>{if(!manual)playGame();});
 canvas.addEventListener('keydown',e=>{if(e.key==='Escape'){manual=false;reset();buttons();message.textContent='Autopilot on.';return;}const dir={ArrowLeft:[-1,0],a:[-1,0],ArrowRight:[1,0],d:[1,0],ArrowUp:[0,-1],w:[0,-1],ArrowDown:[0,1],s:[0,1]}[e.key];if(!dir)return;e.preventDefault();if(!manual)playGame();if(dir[0]!==-heading[0]||dir[1]!==-heading[1])nextHeading=dir;});
 canvas.addEventListener('blur',()=>{manual=false;reset();buttons();});
-canvas.addEventListener('pointermove',e=>{if(paused||e.pointerType==='touch')return;const r=canvas.getBoundingClientRect(),x=(e.clientX-r.left)*1200/r.width,y=(e.clientY-r.top)*226/r.height;for(const c of cells)if(c.level&&Math.hypot(38+c.column*21-x,58+c.row*20-y)<27)scorch(c,clock);});
+canvas.addEventListener('pointermove',e=>{const r=canvas.getBoundingClientRect(),x=(e.clientX-r.left)*1200/r.width,y=(e.clientY-r.top)*226/r.height,c=cells.find(c=>x>=30+c.column*21&&x<=47+c.column*21&&y>=50+c.row*20&&y<=67+c.row*20);canvas.title=c?(c.future?`${c.date}: future date — no activity yet`:`${c.date}: ${c.count} contribution${c.count===1?'':'s'}`):'';if(paused||e.pointerType==='touch')return;for(const c of cells)if(c.level&&Math.hypot(38+c.column*21-x,58+c.row*20-y)<27)scorch(c,clock);});
+canvas.addEventListener('pointerleave',()=>canvas.removeAttribute('title'));
 canvas.addEventListener('touchstart',e=>{const t=e.touches[0];touchStart=[t.clientX,t.clientY];},{passive:true});
 canvas.addEventListener('touchend',e=>{if(!touchStart)return;const t=e.changedTouches[0],dx=t.clientX-touchStart[0],dy=t.clientY-touchStart[1];touchStart=null;if(Math.hypot(dx,dy)<20)return;if(!manual)playGame();const dir=Math.abs(dx)>Math.abs(dy)?[Math.sign(dx),0]:[0,Math.sign(dy)];if(dir[0]!==-heading[0]||dir[1]!==-heading[1])nextHeading=dir;},{passive:true});
 dark.addEventListener('change',()=>{colors();draw(clock);});
@@ -112,9 +114,9 @@ new ResizeObserver(resize).observe(canvas);
 new IntersectionObserver(([e])=>{visible=e.isIntersecting;if(visible)start();else stop();}).observe(canvas);
 try{
  const [response,colorResponse,fontResponse]=await Promise.all([fetch('contributions.json'),fetch('chase-palette.json'),fetch('brick-font.json')]);if(!response.ok||!colorResponse.ok||!fontResponse.ok)throw new Error('Contribution data unavailable');const calendar=await response.json();targetColors=await colorResponse.json();brickFont=await fontResponse.json();
- cells=calendar.weeks.flatMap((w,column)=>w.contributionDays.map(d=>({column,row:d.weekday,date:d.date,count:d.contributionCount,level:['NONE','FIRST_QUARTILE','SECOND_QUARTILE','THIRD_QUARTILE','FOURTH_QUARTILE'].indexOf(d.contributionLevel),eaten:-Infinity})));
+ cells=calendar.weeks.flatMap((w,column)=>w.contributionDays.map(d=>({column,row:d.weekday,date:d.date,count:d.contributionCount,future:!!d.future,level:['NONE','FIRST_QUARTILE','SECOND_QUARTILE','THIRD_QUARTILE','FOURTH_QUARTILE'].indexOf(d.contributionLevel),eaten:-Infinity})));
  allowed=new Set(cells.map(c=>key([c.column,c.row])));
  let month='';for(const c of cells){const date=new Date(c.date+'T12:00:00Z'),next=date.toLocaleDateString('en',{month:'short',timeZone:'UTC'});if(next!==month){if(c.column||date.getUTCDate()<=7)labels.push({text:next,column:c.column});month=next;}}
- summary.textContent=`${calendar.totalContributions.toLocaleString()} contributions in the last year`;
+ summary.textContent=`${calendar.totalContributions.toLocaleString()} contributions in ${calendar.year||'the last year'}`;
  colors();reset();resize();buttons();start();
 }catch(error){summary.textContent='Activity unavailable — view GitHub for the live calendar.';message.textContent='Please reload to try again.';play.disabled=pause.disabled=true;console.error(error);}
