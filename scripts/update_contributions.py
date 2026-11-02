@@ -4,6 +4,8 @@ Standard library only. GITHUB_TOKEN is provided by GitHub Actions.
 No source code or private repository names are fetched or published.
 """
 import datetime as dt
+import math
+from collections import deque
 import json
 import os
 import re
@@ -41,14 +43,73 @@ def snake_path():
     return path
 
 
+def chase_plan(calendar):
+    """A closed pursuit with safe adjacent steps and matching body at the seam."""
+    body = [(11-i, 0) for i in range(12)]
+    path, times, events = [body[0]], [0.0], []
+    candidates = [(x, d['weekday']) for x, w in enumerate(calendar['weeks'])
+                  for d in w['contributionDays'] if d['contributionCount'] > 0 and d['weekday'] > 0]
+
+    def route(goal):
+        blocked = set(body[:-1])
+        queue = deque([(body[0], [])])
+        seen = {body[0]}
+        while queue:
+            head, trail = queue.popleft()
+            if head == goal:
+                return trail
+            neighbors = [(head[0]+dx, head[1]+dy) for dx, dy in [(1,0),(0,1),(-1,0),(0,-1)]]
+            neighbors.sort(key=lambda p: abs(p[0]-goal[0])+abs(p[1]-goal[1]))
+            for p in neighbors:
+                if not (0 <= p[0] < 54 and 1 <= p[1] < 7) or p in blocked or p in seen:
+                    continue
+                seen.add(p)
+                queue.append((p, trail+[p]))
+        return None
+
+    def advance(p, delay):
+        if p != body[0]:
+            assert abs(p[0]-body[0][0])+abs(p[1]-body[0][1]) == 1
+            assert p not in body[:-1]
+            body.insert(0, p)
+            body.pop()
+        path.append(p)
+        times.append(times[-1]+delay)
+
+    advance((11, 1), .18)
+    previous = None
+    for turn in range(min(10, len(candidates))):
+        choices = [p for p in candidates if p not in body and p != previous]
+        choices.sort(key=lambda p: (abs(abs(p[0]-body[0][0])+abs(p[1]-body[0][1])-16), (p[0]*17+p[1]*31+turn*13)%53))
+        for goal in choices:
+            trail = route(goal)
+            if trail:
+                start = times[-1]
+                for i, p in enumerate(trail):
+                    advance(p, .10 if len(trail)-i <= 4 else .18)
+                events.append((goal, start, times[-1]))
+                advance(goal, .45)
+                previous = goal
+                break
+    trail = route((0, 1))
+    if trail is None:
+        raise ValueError('Cannot close the chase safely')
+    for p in trail:
+        advance(p, .18)
+    advance((0, 0), .18)
+    for x in range(1, 12):
+        advance((x, 0), .18)
+    assert body == [(11-i, 0) for i in range(12)]
+    return path, times, events
+
+
 def render(calendar, animated=True):
     weeks = calendar["weeks"]
     if not weeks or len(weeks) > 54:
         raise ValueError("Unexpected calendar width")
     title = f'{calendar["totalContributions"]:,} contributions in the last year'
-    path = snake_path()
-    order = {cell: i for i, cell in enumerate(path)}
-    period = len(path) * .16
+    path, times, events = chase_plan(calendar)
+    period = times[-1]
     parts = ['<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="252" viewBox="0 0 1200 252">',
              f'<title>{escape(LOGIN)}: {escape(title)}</title>',
              '<rect width="1200" height="252" rx="16" fill="#f8fbff"/>', '<defs>']
@@ -80,16 +141,40 @@ def render(calendar, animated=True):
             if level:
                 parts.append(f'<rect x="{x}" y="{y}" width="17" height="17" rx="3" fill="url(#dither{level})">')
                 if animated:
-                    begin = order[(column, day["weekday"])] * .16
-                    parts.append(f'<animate attributeName="opacity" values="0;0;.35;1;1" keyTimes="0;.02;.05;.09;1" begin="{begin:.2f}s" dur="{period:.2f}s" repeatCount="indefinite"/>')
+                    catches = [caught for goal, _, caught in events if goal == (column, day['weekday'])]
+                    keys, opacity = [0.0], ['1']
+                    for caught in catches:
+                        keys.extend([max(0, caught-.001)/period, caught/period, min(period, caught+.6)/period, min(period, caught+2)/period])
+                        opacity.extend(['1', '0', '0', '1'])
+                    keys.append(1.0)
+                    opacity.append('1')
+                    parts.append(f'<animate attributeName="opacity" values="{";".join(opacity)}" keyTimes="{";".join(f"{t:.6f}" for t in keys)}" dur="{period:.3f}s" repeatCount="indefinite"/>')
                 parts.append('</rect>')
             parts.append('</g>')
     if animated:
+        for goal, start, caught in events:
+            x, y = 38.5+goal[0]*21, 70.5+goal[1]*20
+            keys = f'0;{start/period:.6f};{caught/period:.6f};1'
+            # The target disappears exactly when the snake reaches its cell.
+            parts.append(f'<g data-chase-target="true" opacity="0"><animate attributeName="opacity" values="0;1;0;0" keyTimes="{keys}" calcMode="discrete" dur="{period:.3f}s" repeatCount="indefinite"/><circle cx="{x}" cy="{y}" r="3" fill="#f5bf39"/><circle cx="{x}" cy="{y}" r="8" fill="none" stroke="#e7ae22" stroke-width="1.5"><animate attributeName="r" values="7;10;7" dur=".8s" repeatCount="indefinite"/></circle></g>')
+            end = min(period, caught+.75)
+            for i in range(14):
+                angle = i*math.tau/14
+                dx, dy = math.cos(angle)*32, math.sin(angle)*32
+                keys = f'0;{(caught-.001)/period:.6f};{caught/period:.6f};{end/period:.6f};1'
+                parts.append(f'<circle data-catch-burst="true" cx="{x}" cy="{y}" r="1.8" fill="#328fce" opacity="0"><animate attributeName="opacity" values="0;0;.9;0;0" keyTimes="{keys}" dur="{period:.3f}s" repeatCount="indefinite"/><animateTransform attributeName="transform" type="translate" values="0 0;0 0;0 0;{dx:.2f} {dy:.2f};{dx:.2f} {dy:.2f}" keyTimes="{keys}" dur="{period:.3f}s" repeatCount="indefinite"/></circle>')
+        # Every segment follows the head's actual trail, including the loop seam.
+        initial = [(11-i, 0) for i in range(12)]
+        bodies, current = [], initial[:]
+        for point in path:
+            if point != current[0]:
+                current = [point]+current[:-1]
+            bodies.append(current[:])
         for segment in range(11, -1, -1):
-            positions = path[-segment:] + path[:-segment] if segment else path
-            values = ';'.join(f'{30+x*21+8.5} {62+y*20+8.5}' for x, y in positions+[positions[0]])
+            values = ';'.join(f'{38.5+b[segment][0]*21} {70.5+b[segment][1]*20}' for b in bodies)
+            keys = ';'.join(f'{t/period:.6f}' for t in times)
             radius = 6 if segment == 0 else 5 - segment*.15
-            parts.append(f'<g data-snake-segment="{segment}"><animateTransform attributeName="transform" type="translate" values="{values}" dur="{period:.2f}s" repeatCount="indefinite" calcMode="linear"/><circle r="{radius}" fill="{("#086caf" if segment == 0 else "#328fce")}"/>')
+            parts.append(f'<g data-snake-segment="{segment}"><animateTransform attributeName="transform" type="translate" values="{values}" keyTimes="{keys}" dur="{period:.3f}s" repeatCount="indefinite" calcMode="linear"/><circle r="{radius}" fill="{("#e43d48" if segment == 0 else "#ef6268" if segment%2 else "#bd293c")}"/>')
             if segment == 0:
                 parts.append('<circle cx="2" cy="-2" r="1" fill="white"/><circle cx="2" cy="2" r="1" fill="white"/>')
             parts.append('</g>')
