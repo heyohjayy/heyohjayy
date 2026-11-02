@@ -1,0 +1,9 @@
+[
+  {"name":"gold","fill":"#f5bf39","edge":"#735000","eyes":"#26364d"},
+  {"name":"cyan","fill":"#24b7e8","edge":"#075574","eyes":"#152333"},
+  {"name":"violet","fill":"#a979f4","edge":"#56308e","eyes":"#ffffff"},
+  {"name":"pink","fill":"#f276b3","edge":"#90265d","eyes":"#26364d"},
+  {"name":"white","fill":"#ffffff","edge":"#526d86","eyes":"#152333"},
+  {"name":"charcoal","fill":"#152333","edge":"#9bbbd4","eyes":"#ffffff"},
+  {"name":"mint","fill":"#37d7a2","edge":"#0c6852","eyes":"#152333"}
+]
