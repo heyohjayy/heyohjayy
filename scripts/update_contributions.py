@@ -61,7 +61,7 @@ def render(calendar, animated=True):
         parts.append('</pattern>')
     parts.extend(['</defs>',
              '<g font-family="Consolas,monospace" fill="#61778c" font-size="12">',
-             '<text x="28" y="28" letter-spacing="2">CONTRIBUTIONS / SNAKE + DITHER</text>',
+             '<text x="28" y="28" letter-spacing="2">I\'VE BEEN BUSY 😎</text>',
              f'<text x="1172" y="28" text-anchor="end">{escape(title)}</text>'])
     last_month = None
     for column, week in enumerate(weeks):
