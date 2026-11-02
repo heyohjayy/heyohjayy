@@ -12,7 +12,7 @@
 <a href="https://heyohjayy.github.io/heyohjayy/#activity-title">
   <picture>
     <source media="(prefers-reduced-motion: reduce)" srcset="assets/contributions-static.svg">
-    <img src="assets/contributions.svg" width="1200" alt="Real GitHub contribution calendar for heyohjayy with a blue snake and dithered cells. Open the interactive profile to play.">
+    <img src="assets/contributions.svg" width="1200" alt="Real GitHub contribution calendar for heyohjayy. A red snake chases gold targets with blue particle bursts. Open the interactive profile to play.">
   </picture>
 </a>
 
