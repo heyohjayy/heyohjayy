@@ -110,6 +110,7 @@ def render(calendar, animated=True):
     title = f'{calendar["totalContributions"]:,} contributions in the last year'
     path, times, events = chase_plan(calendar)
     period = times[-1]
+    target_colors = json.loads((ROOT / 'site/chase-palette.json').read_text(encoding='utf-8'))
     parts = ['<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="252" viewBox="0 0 1200 252">',
              f'<title>{escape(LOGIN)}: {escape(title)}</title>',
              '<rect width="1200" height="252" rx="16" fill="#f8fbff"/>', '<defs>']
@@ -152,17 +153,27 @@ def render(calendar, animated=True):
                 parts.append('</rect>')
             parts.append('</g>')
     if animated:
-        for goal, start, caught in events:
+        parts.append('<g data-chase-scene="true" opacity="0"><animate attributeName="opacity" from="0" to="1" dur=".15s" fill="freeze"/>')
+        for event_index, (goal, start, caught) in enumerate(events):
+            tint = target_colors[event_index % len(target_colors)]
+            fill, edge = tint['fill'], tint['edge']
             x, y = 38.5+goal[0]*21, 70.5+goal[1]*20
             keys = f'0;{start/period:.6f};{caught/period:.6f};1'
             # The target disappears exactly when the snake reaches its cell.
-            parts.append(f'<g data-chase-target="true" opacity="0"><animate attributeName="opacity" values="0;1;0;0" keyTimes="{keys}" calcMode="discrete" dur="{period:.3f}s" repeatCount="indefinite"/><circle cx="{x}" cy="{y}" r="3" fill="#f5bf39"/><circle cx="{x}" cy="{y}" r="8" fill="none" stroke="#e7ae22" stroke-width="1.5"><animate attributeName="r" values="7;10;7" dur=".8s" repeatCount="indefinite"/></circle></g>')
-            end = min(period, caught+.75)
-            for i in range(14):
-                angle = i*math.tau/14
-                dx, dy = math.cos(angle)*32, math.sin(angle)*32
+            parts.append(f'<g data-chase-target="{tint["name"]}" opacity="0"><animate attributeName="opacity" values="0;1;0;0" keyTimes="{keys}" calcMode="discrete" dur="{period:.3f}s" repeatCount="indefinite"/><circle cx="{x}" cy="{y}" r="17" fill="{fill}" opacity=".16"><animate attributeName="r" values="14;19;14" dur=".9s" repeatCount="indefinite"/></circle><circle cx="{x}" cy="{y}" r="4" fill="{fill}" stroke="{edge}"/><circle cx="{x}" cy="{y}" r="8" fill="none" stroke="{edge}" stroke-width="1.3"><animate attributeName="r" values="7;10;7" dur=".8s" repeatCount="indefinite"/></circle><g transform="translate({x} {y})"><g><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="3s" repeatCount="indefinite"/>')
+            for sx, sy in [(13,0), (0,13), (-13,0), (0,-13)]:
+                parts.append(f'<path d="M {sx-2.5} {sy} h 5 M {sx} {sy-2.5} v 5" fill="none" stroke="{edge}" stroke-width="1.4"/>')
+            parts.append('</g></g></g>')
+            end = min(period, caught+1.1)
+            burst_keys = f'0;{(caught-.001)/period:.6f};{caught/period:.6f};{end/period:.6f};1'
+            for radius, stroke in [(52, fill), (33, edge)]:
+                parts.append(f'<circle data-shockwave="true" cx="{x}" cy="{y}" r="5" fill="none" stroke="{stroke}" stroke-width="1.7" opacity="0"><animate attributeName="opacity" values="0;0;.8;0;0" keyTimes="{burst_keys}" dur="{period:.3f}s" repeatCount="indefinite"/><animate attributeName="r" values="5;5;5;{radius};{radius}" keyTimes="{burst_keys}" dur="{period:.3f}s" repeatCount="indefinite"/></circle>')
+            for i in range(32):
+                angle = i*math.tau/32
+                spread = 58 if i%2 else 39
+                dx, dy = math.cos(angle)*spread, math.sin(angle)*spread
                 keys = f'0;{(caught-.001)/period:.6f};{caught/period:.6f};{end/period:.6f};1'
-                parts.append(f'<circle data-catch-burst="true" cx="{x}" cy="{y}" r="1.8" fill="#328fce" opacity="0"><animate attributeName="opacity" values="0;0;.9;0;0" keyTimes="{keys}" dur="{period:.3f}s" repeatCount="indefinite"/><animateTransform attributeName="transform" type="translate" values="0 0;0 0;0 0;{dx:.2f} {dy:.2f};{dx:.2f} {dy:.2f}" keyTimes="{keys}" dur="{period:.3f}s" repeatCount="indefinite"/></circle>')
+                parts.append(f'<circle data-catch-burst="true" cx="{x}" cy="{y}" r="{1.7+i%3*.4}" fill="{fill}" stroke="{edge}" stroke-width=".4" opacity="0"><animate attributeName="opacity" values="0;0;.9;0;0" keyTimes="{keys}" dur="{period:.3f}s" repeatCount="indefinite"/><animateTransform attributeName="transform" type="translate" values="0 0;0 0;0 0;{dx:.2f} {dy:.2f};{dx:.2f} {dy:.2f}" keyTimes="{keys}" dur="{period:.3f}s" repeatCount="indefinite"/></circle>')
         # Every segment follows the head's actual trail, including the loop seam.
         initial = [(11-i, 0) for i in range(12)]
         bodies, current = [], initial[:]
@@ -174,16 +185,38 @@ def render(calendar, animated=True):
             values = ';'.join(f'{38.5+b[segment][0]*21} {70.5+b[segment][1]*20}' for b in bodies)
             keys = ';'.join(f'{t/period:.6f}' for t in times)
             radius = 6 if segment == 0 else 5 - segment*.15
-            parts.append(f'<g data-snake-segment="{segment}"><animateTransform attributeName="transform" type="translate" values="{values}" keyTimes="{keys}" dur="{period:.3f}s" repeatCount="indefinite" calcMode="linear"/><circle r="{radius}" fill="{("#e43d48" if segment == 0 else "#ef6268" if segment%2 else "#bd293c")}"/>')
+            color_keys = ';'.join(['0']+[f'{caught/period:.6f}' for _, _, caught in events]+['1'])
+            def color_animation(attribute, field, initial):
+                colors = [initial]+[target_colors[i%len(target_colors)][field] for i in range(len(events))]
+                colors.append(colors[-1])
+                return f'<animate attributeName="{attribute}" values="{";".join(colors)}" keyTimes="{color_keys}" calcMode="discrete" dur="{period:.3f}s" repeatCount="indefinite"/>'
+            parts.append(f'<g data-snake-segment="{segment}"><animateTransform attributeName="transform" type="translate" values="{values}" keyTimes="{keys}" dur="{period:.3f}s" repeatCount="indefinite" calcMode="linear"/><circle data-snake-ink="true" r="{radius}" fill="#e43d48" stroke="#842133" stroke-width="1">{color_animation("fill", "fill", "#e43d48")}{color_animation("stroke", "edge", "#842133")}</circle>')
+            glow_times, glow_values = [0.0], ['0']
+            for _, _, caught in events:
+                at = caught+segment*.038
+                glow_times.extend([(at-.001)/period, at/period, (at+.35)/period])
+                glow_values.extend(['0', '.7', '0'])
+            glow_times.append(1.0)
+            glow_values.append('0')
+            parts.append(f'<circle r="{radius+2.5}" fill="none" stroke="#f5bf39" stroke-width="2" opacity="0">{color_animation("stroke", "fill", "#e43d48")}<animate attributeName="opacity" values="{";".join(glow_values)}" keyTimes="{";".join(f"{t:.6f}" for t in glow_times)}" dur="{period:.3f}s" repeatCount="indefinite"/></circle>')
             if segment == 0:
-                parts.append('<circle cx="2" cy="-2" r="1" fill="white"/><circle cx="2" cy="2" r="1" fill="white"/>')
+                eye_animation = color_animation('fill', 'eyes', '#ffffff')
+                parts.append(f'<circle cx="2" cy="-2" r="1" fill="white">{eye_animation}</circle><circle cx="2" cy="2" r="1" fill="white">{eye_animation}</circle>')
             parts.append('</g>')
+        parts.append('</g>')
     parts.append('<text x="30" y="237">@heyohjayy / real GitHub activity</text>')
     parts.append('<text x="1014" y="237">Less</text>')
     for i, color in enumerate(COLORS.values()):
         parts.append(f'<rect x="{1054+i*19}" y="225" width="15" height="15" rx="3" fill="{color}"/>')
     parts.append('<text x="1156" y="237">More</text></g></svg>')
-    return "\n".join(parts)
+    output = "\n".join(parts)
+    if animated:
+        # Delay the chase for a once-only greeting. All chase timelines share this origin.
+        output = output.replace('<animate ', '<animate begin="3.2s" ').replace('<animateTransform ', '<animateTransform begin="3.2s" ')
+        greeting = ['<defs><clipPath id="hello-clip"><rect width="0" height="28"><animate attributeName="width" values="'+ ';'.join(str(i*10) for i in range(22)) +'" calcMode="discrete" begin=".18s" dur=".95s" fill="freeze"/></rect></clipPath><clipPath id="building-clip"><rect width="0" height="28"><animate attributeName="width" values="'+ ';'.join(str(i*10) for i in range(21)) +'" calcMode="discrete" begin="1.15s" dur=".9s" fill="freeze"/></rect></clipPath></defs>',
+                    '<g data-greeting="true" opacity="0"><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.08;.88;1" dur="3.2s" fill="freeze"/><rect x="420" y="88" width="360" height="96" rx="10" fill="#152333" stroke="#68bdff"/><g transform="translate(444 99)" clip-path="url(#hello-clip)"><text y="20" font-family="Consolas,monospace" font-size="16" fill="#e8f4ff">&gt; hello, visitor 👋</text></g><g transform="translate(444 133)" clip-path="url(#building-clip)"><text y="20" font-family="Consolas,monospace" font-size="16" fill="#68bdff">&gt; catch me building.</text></g></g>']
+        output = output.replace('</svg>', ''.join(greeting)+'</svg>')
+    return output
 
 
 def write_outputs(calendar):
