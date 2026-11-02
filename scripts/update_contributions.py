@@ -5,6 +5,7 @@ No source code or private repository names are fetched or published.
 """
 import datetime as dt
 import math
+import random
 from collections import deque
 import json
 import os
@@ -45,10 +46,15 @@ def snake_path():
 
 def chase_plan(calendar):
     """A closed pursuit with safe adjacent steps and matching body at the seam."""
-    body = [(11-i, 0) for i in range(12)]
+    allowed = {(x, d['weekday']) for x, w in enumerate(calendar['weeks']) for d in w['contributionDays']}
+    start_x = min(x for x, y in allowed if y == 0)
+    initial = [(start_x+11-i, 0) for i in range(12)]
+    body = initial[:]
     path, times, events = [body[0]], [0.0], []
-    candidates = [(x, d['weekday']) for x, w in enumerate(calendar['weeks'])
-                  for d in w['contributionDays'] if d['contributionCount'] > 0 and d['weekday'] > 0]
+    candidates = sorted(p for p in allowed if p[1] > 0)
+    min_x, max_x = min(x for x, _ in allowed), max(x for x, _ in allowed)
+    zone = lambda p: min(2, (p[0]-min_x)*3//(max_x-min_x+1))
+    rng = random.Random(1942+sum(ord(c) for c in calendar['weeks'][0]['contributionDays'][0]['date']))
 
     def route(goal):
         blocked = set(body[:-1])
@@ -61,13 +67,14 @@ def chase_plan(calendar):
             neighbors = [(head[0]+dx, head[1]+dy) for dx, dy in [(1,0),(0,1),(-1,0),(0,-1)]]
             neighbors.sort(key=lambda p: abs(p[0]-goal[0])+abs(p[1]-goal[1]))
             for p in neighbors:
-                if not (0 <= p[0] < 54 and 1 <= p[1] < 7) or p in blocked or p in seen:
+                if p not in allowed or p[1] == 0 or p in blocked or p in seen:
                     continue
                 seen.add(p)
                 queue.append((p, trail+[p]))
         return None
 
     def advance(p, delay):
+        assert p in allowed
         if p != body[0]:
             assert abs(p[0]-body[0][0])+abs(p[1]-body[0][1]) == 1
             assert p not in body[:-1]
@@ -76,30 +83,46 @@ def chase_plan(calendar):
         path.append(p)
         times.append(times[-1]+delay)
 
-    advance((11, 1), .18)
+    advance((initial[0][0], 1), .18)
     previous = None
-    for turn in range(min(10, len(candidates))):
-        choices = [p for p in candidates if p not in body and p != previous]
-        choices.sort(key=lambda p: (abs(abs(p[0]-body[0][0])+abs(p[1]-body[0][1])-16), (p[0]*17+p[1]*31+turn*13)%53))
+    # Ten main targets plus two left-side closing targets give four per third.
+    zones = []
+    for _ in range(2):
+        group = [0, 1, 2]
+        rng.shuffle(group)
+        zones.extend(group)
+    closing_balance = [1, 2, 1, 2]
+    rng.shuffle(closing_balance)
+    zones.extend(closing_balance)
+    for turn, area in enumerate(zones):
+        choices = [p for p in candidates if p not in body and p != previous and zone(p) == area]
+        rng.shuffle(choices)
         for goal in choices:
             trail = route(goal)
             if trail:
-                start = times[-1]
+                start = 0.0 if not events else times[-1]
                 for i, p in enumerate(trail):
                     advance(p, .10 if len(trail)-i <= 4 else .18)
                 events.append((goal, start, times[-1]))
                 advance(goal, .45)
                 previous = goal
                 break
-    trail = route((0, 1))
+    goal = (start_x, 1)
+    trail = route(goal)
     if trail is None:
         raise ValueError('Cannot close the chase safely')
+    start = times[-1]
     for p in trail:
         advance(p, .18)
-    advance((0, 0), .18)
-    for x in range(1, 12):
+    events.append((goal, start, times[-1]))
+    advance(goal, .45)
+    start = times[-1]
+    advance((start_x, 0), .18)
+    for x in range(start_x+1, start_x+12):
         advance((x, 0), .18)
-    assert body == [(11-i, 0) for i in range(12)]
+    events.append((initial[0], start, times[-1]))
+    advance(initial[0], 1.1)
+    assert body == initial
     return path, times, events
 
 
@@ -121,6 +144,12 @@ def render(calendar, animated=True):
             if threshold < [0, 4, 8, 12, 16][level]:
                 parts.append(f'<rect x="{(i % 4)*2}" y="{(i//4)*2}" width="1.3" height="1.3" fill="{color}"/>')
         parts.append('</pattern>')
+    parts.append('<clipPath id="calendar-area">')
+    for row in range(7):
+        columns = [x for x, w in enumerate(weeks) for d in w['contributionDays'] if d['weekday'] == row]
+        if columns:
+            parts.append(f'<rect x="{30+min(columns)*21}" y="{62+row*20}" width="{(max(columns)-min(columns))*21+17}" height="{17 if row == 6 else 20}"/>')
+    parts.append('</clipPath>')
     parts.extend(['</defs>',
              '<g font-family="Consolas,monospace" fill="#61778c" font-size="12">',
              '<text x="28" y="28" letter-spacing="2">I\'VE BEEN BUSY 😎</text>',
@@ -145,7 +174,7 @@ def render(calendar, animated=True):
                     catches = [caught for goal, _, caught in events if goal == (column, day['weekday'])]
                     keys, opacity = [0.0], ['1']
                     for caught in catches:
-                        keys.extend([max(0, caught-.001)/period, caught/period, min(period, caught+.6)/period, min(period, caught+2)/period])
+                        keys.extend([max(0, caught-.001)/period, caught/period, min(period*(1-.00003), caught+.6)/period, min(period*(1-.00002), caught+2)/period])
                         opacity.extend(['1', '0', '0', '1'])
                     keys.append(1.0)
                     opacity.append('1')
@@ -153,18 +182,20 @@ def render(calendar, animated=True):
                 parts.append('</rect>')
             parts.append('</g>')
     if animated:
-        parts.append('<g data-chase-scene="true" opacity="0"><animate attributeName="opacity" from="0" to="1" dur=".15s" fill="freeze"/>')
+        parts.append('<g data-chase-scene="true" clip-path="url(#calendar-area)" opacity="0"><animate attributeName="opacity" from="0" to="1" dur=".15s" fill="freeze"/>')
         for event_index, (goal, start, caught) in enumerate(events):
             tint = target_colors[event_index % len(target_colors)]
             fill, edge = tint['fill'], tint['edge']
             x, y = 38.5+goal[0]*21, 70.5+goal[1]*20
-            keys = f'0;{start/period:.6f};{caught/period:.6f};1'
+            target_keys = [0.0, caught/period, 1.0] if start == 0 else [0.0, start/period, caught/period, 1.0]
+            target_values = '1;0;0' if start == 0 else '0;1;0;0'
+            keys = ';'.join(f'{key:.6f}' for key in target_keys)
             # The target disappears exactly when the snake reaches its cell.
-            parts.append(f'<g data-chase-target="{tint["name"]}" opacity="0"><animate attributeName="opacity" values="0;1;0;0" keyTimes="{keys}" calcMode="discrete" dur="{period:.3f}s" repeatCount="indefinite"/><circle cx="{x}" cy="{y}" r="17" fill="{fill}" opacity=".16"><animate attributeName="r" values="14;19;14" dur=".9s" repeatCount="indefinite"/></circle><circle cx="{x}" cy="{y}" r="4" fill="{fill}" stroke="{edge}"/><circle cx="{x}" cy="{y}" r="8" fill="none" stroke="{edge}" stroke-width="1.3"><animate attributeName="r" values="7;10;7" dur=".8s" repeatCount="indefinite"/></circle><g transform="translate({x} {y})"><g><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="3s" repeatCount="indefinite"/>')
+            parts.append(f'<g data-chase-target="{tint["name"]}" data-column="{goal[0]}" data-row="{goal[1]}" opacity="0"><animate attributeName="opacity" values="{target_values}" keyTimes="{keys}" calcMode="discrete" dur="{period:.3f}s" repeatCount="indefinite"/><circle cx="{x}" cy="{y}" r="17" fill="{fill}" opacity=".16"><animate attributeName="r" values="14;19;14" dur=".9s" repeatCount="indefinite"/></circle><circle cx="{x}" cy="{y}" r="4" fill="{fill}" stroke="{edge}"/><circle cx="{x}" cy="{y}" r="8" fill="none" stroke="{edge}" stroke-width="1.3"><animate attributeName="r" values="7;10;7" dur=".8s" repeatCount="indefinite"/></circle><g transform="translate({x} {y})"><g><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="3s" repeatCount="indefinite"/>')
             for sx, sy in [(13,0), (0,13), (-13,0), (0,-13)]:
                 parts.append(f'<path d="M {sx-2.5} {sy} h 5 M {sx} {sy-2.5} v 5" fill="none" stroke="{edge}" stroke-width="1.4"/>')
             parts.append('</g></g></g>')
-            end = min(period, caught+1.1)
+            end = min(period*(1-.00001), caught+1.1)
             burst_keys = f'0;{(caught-.001)/period:.6f};{caught/period:.6f};{end/period:.6f};1'
             for radius, stroke in [(52, fill), (33, edge)]:
                 parts.append(f'<circle data-shockwave="true" cx="{x}" cy="{y}" r="5" fill="none" stroke="{stroke}" stroke-width="1.7" opacity="0"><animate attributeName="opacity" values="0;0;.8;0;0" keyTimes="{burst_keys}" dur="{period:.3f}s" repeatCount="indefinite"/><animate attributeName="r" values="5;5;5;{radius};{radius}" keyTimes="{burst_keys}" dur="{period:.3f}s" repeatCount="indefinite"/></circle>')
@@ -175,7 +206,7 @@ def render(calendar, animated=True):
                 keys = f'0;{(caught-.001)/period:.6f};{caught/period:.6f};{end/period:.6f};1'
                 parts.append(f'<circle data-catch-burst="true" cx="{x}" cy="{y}" r="{1.7+i%3*.4}" fill="{fill}" stroke="{edge}" stroke-width=".4" opacity="0"><animate attributeName="opacity" values="0;0;.9;0;0" keyTimes="{keys}" dur="{period:.3f}s" repeatCount="indefinite"/><animateTransform attributeName="transform" type="translate" values="0 0;0 0;0 0;{dx:.2f} {dy:.2f};{dx:.2f} {dy:.2f}" keyTimes="{keys}" dur="{period:.3f}s" repeatCount="indefinite"/></circle>')
         # Every segment follows the head's actual trail, including the loop seam.
-        initial = [(11-i, 0) for i in range(12)]
+        initial = [(path[0][0]-i, path[0][1]) for i in range(12)]
         bodies, current = [], initial[:]
         for point in path:
             if point != current[0]:
@@ -213,8 +244,20 @@ def render(calendar, animated=True):
     if animated:
         # Delay the chase for a once-only greeting. All chase timelines share this origin.
         output = output.replace('<animate ', '<animate begin="3.2s" ').replace('<animateTransform ', '<animateTransform begin="3.2s" ')
-        greeting = ['<defs><clipPath id="hello-clip"><rect width="0" height="28"><animate attributeName="width" values="'+ ';'.join(str(i*10) for i in range(22)) +'" calcMode="discrete" begin=".18s" dur=".95s" fill="freeze"/></rect></clipPath><clipPath id="building-clip"><rect width="0" height="28"><animate attributeName="width" values="'+ ';'.join(str(i*10) for i in range(21)) +'" calcMode="discrete" begin="1.15s" dur=".9s" fill="freeze"/></rect></clipPath></defs>',
-                    '<g data-greeting="true" opacity="0"><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.08;.88;1" dur="3.2s" fill="freeze"/><rect x="420" y="88" width="360" height="96" rx="10" fill="#152333" stroke="#68bdff"/><g transform="translate(444 99)" clip-path="url(#hello-clip)"><text y="20" font-family="Consolas,monospace" font-size="16" fill="#e8f4ff">&gt; hello, visitor 👋</text></g><g transform="translate(444 133)" clip-path="url(#building-clip)"><text y="20" font-family="Consolas,monospace" font-size="16" fill="#68bdff">&gt; catch me building.</text></g></g>']
+        font = json.loads((ROOT / 'site/brick-font.json').read_text(encoding='utf-8'))
+        greeting = ['<g data-greeting="true" opacity="0" clip-path="url(#calendar-area)"><title>Hello — catch me building.</title><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.1;.56;1" dur="3.2s" fill="freeze"/>']
+        size, brick = 5.5, 0
+        for line_index, line in enumerate(['HELLO', 'CATCH ME BUILDING']):
+            left, top = (1200-(len(line)*6-1)*size)/2, 83+line_index*50
+            for char_index, letter in enumerate(line):
+                for y, row in enumerate(font.get(letter, [])):
+                    for x, pixel in enumerate(row):
+                        if pixel != '1':
+                            continue
+                        dx, dy = math.sin(brick*2.399)*26, math.cos(brick*1.719)*22
+                        greeting.append(f'<rect data-brick="true" x="{left+(char_index*6+x)*size:.2f}" y="{top+y*size:.2f}" width="{size*.8}" height="{size*.8}" fill="{("#0879c4" if line_index == 0 else "#375e7c")}"><animateTransform attributeName="transform" type="translate" from="0 0" to="{dx:.2f} {dy:.2f}" begin="1.8s" dur="1.4s" fill="freeze"/></rect>')
+                        brick += 1
+        greeting.append('</g>')
         output = output.replace('</svg>', ''.join(greeting)+'</svg>')
     return output
 
