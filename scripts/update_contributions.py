@@ -18,9 +18,9 @@ from xml.sax.saxutils import escape
 
 ROOT = Path(__file__).resolve().parents[1]
 LOGIN = "heyohjayy"
-QUERY = """query($login: String!) {
+QUERY = """query($login: String!, $from: DateTime!, $to: DateTime!) {
   user(login: $login) {
-    contributionsCollection {
+    contributionsCollection(from: $from, to: $to) {
       contributionCalendar {
         totalContributions
         weeks { contributionDays { date weekday contributionCount contributionLevel } }
@@ -29,10 +29,36 @@ QUERY = """query($login: String!) {
   }
 }"""
 COLORS = {
-    "NONE": "#e5eef6", "FIRST_QUARTILE": "#bfdef5",
-    "SECOND_QUARTILE": "#79bfee", "THIRD_QUARTILE": "#328fce",
+    "NONE": "#e5eef6", "FIRST_QUARTILE": "#8fc7ed",
+    "SECOND_QUARTILE": "#4ba8e1", "THIRD_QUARTILE": "#167fbe",
     "FOURTH_QUARTILE": "#086caf",
 }
+
+
+def calendar_year(calendar, year, today=None):
+    """Keep GitHub's exact dated counts; require the complete Jan–Dec response."""
+    today = today or dt.datetime.now(dt.timezone(dt.timedelta(hours=1))).date()
+    start, end = dt.date(year, 1, 1), dt.date(year, 12, 31)
+    source = {d['date']: d for w in calendar['weeks'] for d in w['contributionDays']}
+    offset = (start.weekday()+1) % 7
+    weeks = []
+    for day_index in range((end-start).days+1):
+        date = start+dt.timedelta(days=day_index)
+        if date.isoformat() not in source:
+            raise ValueError(f'GitHub calendar is missing {date}; refusing to invent activity')
+        day = dict(source[date.isoformat()])
+        if day['weekday'] != (date.weekday()+1) % 7:
+            raise ValueError(f'Incorrect weekday for {date}')
+        day['future'] = date > today
+        column = (day_index+offset)//7
+        while len(weeks) <= column:
+            weeks.append({'contributionDays': []})
+        weeks[column]['contributionDays'].append(day)
+    total = sum(d['contributionCount'] for w in weeks for d in w['contributionDays'])
+    if total != calendar['totalContributions']:
+        raise ValueError('GitHub total does not match the requested calendar year')
+    return {'year': year, 'periodStart': start.isoformat(), 'periodEnd': end.isoformat(),
+            'asOf': today.isoformat(), 'totalContributions': total, 'weeks': weeks}
 
 
 def snake_path():
@@ -130,7 +156,7 @@ def render(calendar, animated=True):
     weeks = calendar["weeks"]
     if not weeks or len(weeks) > 54:
         raise ValueError("Unexpected calendar width")
-    title = f'{calendar["totalContributions"]:,} contributions in the last year'
+    title = f'{calendar["totalContributions"]:,} contributions in {calendar["year"]}' if calendar.get('year') else f'{calendar["totalContributions"]:,} contributions in the last year'
     path, times, events = chase_plan(calendar)
     period = times[-1]
     target_colors = json.loads((ROOT / 'site/chase-palette.json').read_text(encoding='utf-8'))
@@ -142,7 +168,7 @@ def render(calendar, animated=True):
         parts.append(f'<pattern id="dither{level}" width="8" height="8" patternUnits="userSpaceOnUse">')
         for i, threshold in enumerate(bayer):
             if threshold < [0, 4, 8, 12, 16][level]:
-                parts.append(f'<rect x="{(i % 4)*2}" y="{(i//4)*2}" width="1.3" height="1.3" fill="{color}"/>')
+                parts.append(f'<rect x="{(i % 4)*2}" y="{(i//4)*2}" width="1.3" height="1.3" fill="#0b4268"/>')
         parts.append('</pattern>')
     parts.append('<clipPath id="calendar-area">')
     for row in range(7):
@@ -155,6 +181,8 @@ def render(calendar, animated=True):
              '<text x="28" y="28" letter-spacing="2">I\'VE BEEN BUSY 😎</text>',
              f'<text x="1172" y="28" text-anchor="end">{escape(title)}</text>'])
     last_month = None
+    for row, label in [(1, 'M'), (3, 'W'), (5, 'F')]:
+        parts.append(f'<text x="11" y="{74+row*20}">{label}</text>')
     for column, week in enumerate(weeks):
         for day in week["contributionDays"]:
             date = dt.date.fromisoformat(day["date"])
@@ -166,18 +194,21 @@ def render(calendar, animated=True):
             color = COLORS[day["contributionLevel"]]
             level = list(COLORS).index(day["contributionLevel"])
             tip = f'{date.isoformat()}: {day["contributionCount"]} contributions'
+            if day.get('future'):
+                tip = f'{date.isoformat()}: future date — no activity yet'
             parts.append(f'<g data-date="{day["date"]}" data-count="{day["contributionCount"]}" data-level="{day["contributionLevel"]}"><title>{tip}</title>')
-            parts.append(f'<rect x="{x}" y="{y}" width="17" height="17" rx="3" fill="#e5eef6"/>')
+            parts.append(f'<rect x="{x}" y="{y}" width="17" height="17" rx="3" fill="{color if level else "#f1f5f9" if day.get("future") else "#e5eef6"}"/>')
             if level:
-                parts.append(f'<rect x="{x}" y="{y}" width="17" height="17" rx="3" fill="url(#dither{level})">')
+                # Solid activity stays visible; only the decorative texture reacts.
+                parts.append(f'<rect x="{x}" y="{y}" width="17" height="17" rx="3" fill="url(#dither{level})" opacity=".3">')
                 if animated:
                     catches = [caught for goal, _, caught in events if goal == (column, day['weekday'])]
-                    keys, opacity = [0.0], ['1']
+                    keys, opacity = [0.0], ['.3']
                     for caught in catches:
                         keys.extend([max(0, caught-.001)/period, caught/period, min(period*(1-.00003), caught+.6)/period, min(period*(1-.00002), caught+2)/period])
-                        opacity.extend(['1', '0', '0', '1'])
+                        opacity.extend(['.3', '0', '0', '.3'])
                     keys.append(1.0)
-                    opacity.append('1')
+                    opacity.append('.3')
                     parts.append(f'<animate attributeName="opacity" values="{";".join(opacity)}" keyTimes="{";".join(f"{t:.6f}" for t in keys)}" dur="{period:.3f}s" repeatCount="indefinite"/>')
                 parts.append('</rect>')
             parts.append('</g>')
@@ -297,12 +328,14 @@ def main():
         write_outputs(import_existing_svg(sys.argv[2]))
         print('Restyled previously fetched GitHub activity; counts and dates preserved')
         return
+    year = int(os.environ.get('CONTRIBUTION_YEAR', dt.datetime.now(dt.timezone(dt.timedelta(hours=1))).year))
     token = os.environ.get("GITHUB_TOKEN")
     if not token:
         raise SystemExit("GITHUB_TOKEN is required. Run this through the included GitHub Actions workflow.")
     request = urllib.request.Request(
         "https://api.github.com/graphql",
-        data=json.dumps({"query": QUERY, "variables": {"login": LOGIN}}).encode(),
+        data=json.dumps({"query": QUERY, "variables": {"login": LOGIN,
+            "from": f'{year}-01-01T00:00:00Z', "to": f'{year}-12-31T23:59:59Z'}}).encode(),
         headers={"Authorization": f"bearer {token}", "Content-Type": "application/json", "User-Agent": "heyohjayy-profile"},
     )
     with urllib.request.urlopen(request, timeout=45) as response:
@@ -313,8 +346,8 @@ def main():
     if not user:
         raise SystemExit("GitHub user not found")
     calendar = user["contributionsCollection"]["contributionCalendar"]
-    write_outputs(calendar)
-    print(f'Updated contribution calendar for {LOGIN}')
+    write_outputs(calendar_year(calendar, year))
+    print(f'Updated {year} contribution calendar for {LOGIN}')
 
 
 if __name__ == "__main__":
