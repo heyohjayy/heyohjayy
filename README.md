@@ -1,9 +1,7 @@
 <a href="https://heyohjayy.github.io/heyohjayy/">
   <picture>
-    <source media="(prefers-reduced-motion: reduce) and (prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/heyohjayy/heyohjayy/19c0c1ca3f3d4285750a06027440fafd15056452/assets/profile-sky-night-static.png">
-    <source media="(prefers-reduced-motion: reduce)" srcset="https://raw.githubusercontent.com/heyohjayy/heyohjayy/19c0c1ca3f3d4285750a06027440fafd15056452/assets/profile-sky-static.png">
-    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/heyohjayy/heyohjayy/19c0c1ca3f3d4285750a06027440fafd15056452/assets/profile-sky-night.gif">
-    <img src="https://raw.githubusercontent.com/heyohjayy/heyohjayy/19c0c1ca3f3d4285750a06027440fafd15056452/assets/profile-sky.gif" width="1200" alt="Godspower Ojeifo (@heyohjayy), Senior DevOps Engineer. Moving clouds, daytime birds or nighttime stars surround a still portrait and text panel. Cloud infrastructure, reliability and observability, CI/CD pipelines, containerization. Building DriftCTL, Delyneo and KubeMedic.">
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/heyohjayy/heyohjayy/c676ae031e066106d8d16f0153e55515fa6c69ac/assets/profile-dark.svg">
+    <img src="https://raw.githubusercontent.com/heyohjayy/heyohjayy/c676ae031e066106d8d16f0153e55515fa6c69ac/assets/profile-light.svg" width="1200" alt="Godspower Ojeifo (@heyohjayy), Senior DevOps Engineer. 01 / Stack: cloud, infrastructure as code, containers, CI/CD, systems and automation, observability, and DevSecOps. 02 / Focus: helping engineering teams scale cloud infrastructure, operate reliable production services, and automate infrastructure and software delivery.">
   </picture>
 </a>
 
