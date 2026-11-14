@@ -1,7 +1,7 @@
 <a href="https://heyohjayy.github.io/heyohjayy/">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/heyohjayy/heyohjayy/c676ae031e066106d8d16f0153e55515fa6c69ac/assets/profile-dark.svg">
-    <img src="https://raw.githubusercontent.com/heyohjayy/heyohjayy/c676ae031e066106d8d16f0153e55515fa6c69ac/assets/profile-light.svg" width="1200" alt="Godspower Ojeifo (@heyohjayy), Senior DevOps Engineer. 01 / Stack: cloud, infrastructure as code, containers, CI/CD, systems and automation, observability, and DevSecOps. 02 / Focus: helping engineering teams scale cloud infrastructure, operate reliable production services, and automate infrastructure and software delivery.">
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/heyohjayy/heyohjayy/563cbd2b6a4ff68623971b1d084e170fffba7216/assets/profile-dark.svg">
+    <img src="https://raw.githubusercontent.com/heyohjayy/heyohjayy/563cbd2b6a4ff68623971b1d084e170fffba7216/assets/profile-light.svg" width="1200" alt="Hi, welcome. I'm Godspower Ojeifo 👋. Here are some of the tools I work with: cloud, infrastructure as code, containers, CI/CD, systems and automation, observability, and DevSecOps. Focus: helping engineering teams scale cloud infrastructure, operate reliable production services, and automate infrastructure and software delivery.">
   </picture>
 </a>
 
