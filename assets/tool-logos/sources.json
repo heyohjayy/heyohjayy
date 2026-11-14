@@ -1,0 +1,122 @@
+{
+  "AWS": {
+    "file": "amazonwebservices.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/master/icons/amazonwebservices/amazonwebservices-original.svg",
+    "bytes": 3743
+  },
+  "Terraform": {
+    "file": "terraform.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/master/icons/terraform/terraform-original.svg",
+    "bytes": 376
+  },
+  "Docker": {
+    "file": "docker.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/master/icons/docker/docker-original.svg",
+    "bytes": 4452
+  },
+  "Kubernetes": {
+    "file": "kubernetes.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/master/icons/kubernetes/kubernetes-original.svg",
+    "bytes": 8951
+  },
+  "Jenkins": {
+    "file": "jenkins.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/master/icons/jenkins/jenkins-original.svg",
+    "bytes": 15407
+  },
+  "GitHub Actions": {
+    "file": "githubactions.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/master/icons/githubactions/githubactions-original.svg",
+    "bytes": 2854
+  },
+  "GitLab CI": {
+    "file": "gitlab.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/master/icons/gitlab/gitlab-original.svg",
+    "bytes": 1151
+  },
+  "Linux": {
+    "file": "linux.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/master/icons/linux/linux-original.svg",
+    "bytes": 193922
+  },
+  "Bash": {
+    "file": "bash.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/master/icons/bash/bash-original.svg",
+    "bytes": 1800
+  },
+  "Python": {
+    "file": "python.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/master/icons/python/python-original.svg",
+    "bytes": 2300
+  },
+  "Prometheus": {
+    "file": "prometheus.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/master/icons/prometheus/prometheus-original.svg",
+    "bytes": 1223
+  },
+  "Grafana": {
+    "file": "grafana.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/master/icons/grafana/grafana-original.svg",
+    "bytes": 4958
+  },
+  "SonarQube": {
+    "file": "sonarqube.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/master/icons/sonarqube/sonarqube-original.svg",
+    "bytes": 421
+  },
+  "EC2": {
+    "file": "ec2.png",
+    "source": "https://raw.githubusercontent.com/awslabs/aws-icons-for-plantuml/main/dist/Compute/EC2.png",
+    "bytes": 693
+  },
+  "EKS": {
+    "file": "eks.png",
+    "source": "https://raw.githubusercontent.com/awslabs/aws-icons-for-plantuml/main/dist/Containers/ElasticKubernetesService.png",
+    "bytes": 2078
+  },
+  "ECS": {
+    "file": "ecs.png",
+    "source": "https://raw.githubusercontent.com/awslabs/aws-icons-for-plantuml/main/dist/Containers/ElasticContainerService.png",
+    "bytes": 1903
+  },
+  "CloudWatch": {
+    "file": "cloudwatch.png",
+    "source": "https://raw.githubusercontent.com/awslabs/aws-icons-for-plantuml/main/dist/ManagementGovernance/CloudWatch.png",
+    "bytes": 2468
+  },
+  "Docker Compose": {
+    "file": "docker-compose.png",
+    "source": "https://raw.githubusercontent.com/docker/compose/main/logo.png",
+    "bytes": 39135
+  },
+  "GitOps": {
+    "file": "opengitops.svg",
+    "source": "https://raw.githubusercontent.com/cncf/artwork/main/projects/opengitops/icon/color/opengitops-icon-color.svg",
+    "bytes": 11571
+  },
+  "Trivy": {
+    "file": "trivy.svg",
+    "source": "https://raw.githubusercontent.com/aquasecurity/trivy/main/docs/imgs/logo-white.svg",
+    "bytes": 232512
+  },
+  "Checkov": {
+    "file": "checkov.png",
+    "source": "https://raw.githubusercontent.com/bridgecrewio/checkov/main/docs/web/images/favicon.png"
+  },
+  "TruffleHog": {
+    "file": "trufflehog.png",
+    "source": "https://storage.googleapis.com/trufflehog-static-sources/pixel_pig.png",
+    "bytes": 42481
+  },
+  "KubeLinter": {
+    "file": "kubelinter-mark.svg",
+    "source": "https://raw.githubusercontent.com/stackrox/kube-linter/main/images/logo/KubeLinter-vertical.svg",
+    "bytes": 5980,
+    "adaptation": "Icon-only viewBox from original vertical logo; artwork unchanged"
+  },
+  "wave": {
+    "file": "wave.svg",
+    "source": "https://raw.githubusercontent.com/jdecked/twemoji/master/assets/svg/1f44b.svg",
+    "bytes": 1618
+  }
+}
