@@ -5,7 +5,7 @@
   </picture>
 </a>
 
-<p align="center"><a href="https://heyohjayy.github.io/heyohjayy/">Open the interactive profile ↗</a> · Website</p>
+<p align="center"><a href="https://heyohjayy.github.io/heyohjayy/">Open the interactive profile ↗</a></p>
 
 <a href="https://heyohjayy.github.io/heyohjayy/#activity-title">
   <picture>
@@ -17,7 +17,6 @@
 <p align="center">
   <a href="https://www.linkedin.com/in/godspowerojeifo/">LinkedIn</a> ·
   <a href="mailto:gojex.og@gmail.com">Email</a> ·
-  <a href="https://github.com/heyohjayy/DriftCTL">DriftCTL</a> ·
-  <a href="https://github.com/heyohjayy/server-operations-toolkit">Server Operations Toolkit</a> ·
-  <a href="https://github.com/heyohjayy?tab=repositories">More work</a>
+  Website ·
+  <a href="https://github.com/heyohjayy?tab=repositories">My works</a>
 </p>
